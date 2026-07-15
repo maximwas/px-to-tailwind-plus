@@ -53,4 +53,27 @@ describe("findConversions", () => {
     const input = `const input = '<div className="p-16px p-[20px]">';`;
     expect(apply(input, v4)).toBe(input);
   });
+
+  it("converts inside recognised class-utility calls", () => {
+    expect(apply('clsx("p-16px")', v4)).toBe('clsx("p-4")');
+    expect(apply('cn("p-16px", "m-8px")', v4)).toBe('cn("p-4", "m-2")');
+    expect(apply('<div className={clsx("p-[20px]")}>', v4)).toBe(
+      '<div className={clsx("p-5")}>',
+    );
+  });
+
+  it("leaves px tokens outside any class context alone", () => {
+    const cases = [
+      "// p-16px in a line comment",
+      "/* block comment p-16px */",
+      "* @param token e.g. `p-16px`.",
+      'const label = "p-16px";',
+      "const t = `p-16px`;",
+      "someOtherFn('p-16px')",
+      '<div id="p-16px">',
+    ];
+    for (const input of cases) {
+      expect(apply(input, v4)).toBe(input);
+    }
+  });
 });
