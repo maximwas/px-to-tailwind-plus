@@ -1,191 +1,179 @@
 {
-  "name": "px-to-tailwind-converter",
-  "displayName": "Px to Tailwind Converter",
-  "description": "Automatically converts pixel values to Tailwind CSS utility classes as you type",
-  "version": "1.0.4",
-  "publisher": "Azzam666",
-  "author": {
-    "name": "Mohamed Azzam",
-    "email": "azzam@egyptmetal.net"
-  },
+  "name": "px-to-tailwind-plus",
+  "displayName": "Px to Tailwind Plus",
+  "description": "Convert pixel values to Tailwind CSS classes as you type — Tailwind v4 dynamic spacing & v3 classic scale, for VS Code and Cursor.",
+  "version": "1.0.0",
+  "publisher": "maksymvasianin",
   "license": "MIT",
-  "homepage": "https://github.com/Azzam/px-to-tailwind-converter",
+  "homepage": "https://github.com/maximwas/px-to-tailwind-plus#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Azzam/px-to-tailwind-converter.git"
+    "url": "https://github.com/maximwas/px-to-tailwind-plus.git"
   },
   "bugs": {
-    "url": "https://github.com/Azzam/px-to-tailwind-converter/issues"
+    "url": "https://github.com/maximwas/px-to-tailwind-plus/issues"
   },
-  "marketplace": {
-    "url": "https://marketplace.visualstudio.com/items?itemName=Azzam666.px-to-tailwind-converter",
-    "publisher": "https://marketplace.visualstudio.com/publishers/Azzam666"
-  },
-  "keywords": [
-    "tailwind",
-    "css",
-    "utility",
-    "converter",
-    "pixel",
-    "px",
-    "autocomplete",
-    "productivity"
-  ],
   "icon": "icon.png",
   "galleryBanner": {
     "color": "#0f172a",
     "theme": "dark"
   },
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.84.0"
   },
-  "qna": "marketplace",
   "categories": [
-    "Formatters",
-    "Other"
+    "Formatters"
   ],
+  "keywords": [
+    "tailwind",
+    "px",
+    "converter",
+    "cursor",
+    "tailwindcss"
+  ],
+  "main": "./dist/extension.js",
   "activationEvents": [
     "onLanguage:html",
     "onLanguage:javascript",
-    "onLanguage:typescript",
     "onLanguage:javascriptreact",
+    "onLanguage:typescript",
     "onLanguage:typescriptreact",
     "onLanguage:vue",
-    "onLanguage:svelte"
+    "onLanguage:svelte",
+    "onLanguage:astro"
   ],
-  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "pxToTailwind.toggle",
-        "title": "Toggle Px to Tailwind Converter",
-        "category": "Px to Tailwind"
+        "command": "pxToTwPlus.convertFile",
+        "title": "Convert File",
+        "category": "Px to Tailwind Plus"
       },
       {
-        "command": "pxToTailwind.resetConfig",
-        "title": "Reset Configuration",
-        "category": "Px to Tailwind"
+        "command": "pxToTwPlus.convertSelection",
+        "title": "Convert Selection",
+        "category": "Px to Tailwind Plus"
       },
       {
-        "command": "pxToTailwind.showConfig",
-        "title": "Show Configuration",
-        "category": "Px to Tailwind"
+        "command": "pxToTwPlus.toggle",
+        "title": "Toggle Extension",
+        "category": "Px to Tailwind Plus"
       },
       {
-        "command": "pxToTailwind.validateConfig",
-        "title": "Validate Configuration",
-        "category": "Px to Tailwind"
-      },
-      {
-        "command": "pxToTailwind.exportConfig",
-        "title": "Export Configuration",
-        "category": "Px to Tailwind"
-      },
-      {
-        "command": "pxToTailwind.importConfig",
-        "title": "Import Configuration",
-        "category": "Px to Tailwind"
+        "command": "pxToTwPlus.showLogs",
+        "title": "Show Logs",
+        "category": "Px to Tailwind Plus"
       }
     ],
     "configuration": {
-      "title": "Px to Tailwind Converter",
+      "title": "Px to Tailwind Plus",
       "properties": {
-        "pxToTailwind.enabled": {
+        "pxToTwPlus.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable the px to Tailwind conversion",
+          "description": "Enable or disable px → Tailwind conversion.",
           "scope": "window"
         },
-        "pxToTailwind.supportedFileTypes": {
+        "pxToTwPlus.mode": {
+          "type": "string",
+          "enum": ["v4", "v3"],
+          "enumDescriptions": [
+            "Tailwind v4 — dynamic spacing with quarter-step bare classes (e.g. p-4.5).",
+            "Tailwind v3 — fixed classic spacing scale; off-scale values become arbitrary."
+          ],
+          "default": "v4",
+          "description": "Which Tailwind version's spacing model to target.",
+          "scope": "resource"
+        },
+        "pxToTwPlus.spacingBasePx": {
+          "type": "number",
+          "default": 4,
+          "minimum": 0.25,
+          "description": "Base spacing unit in pixels (Tailwind's --spacing). value = px / spacingBasePx.",
+          "scope": "resource"
+        },
+        "pxToTwPlus.stepGranularity": {
+          "type": "number",
+          "enum": [1, 0.5, 0.25],
+          "enumDescriptions": [
+            "Integers only — everything else becomes an arbitrary value.",
+            "Half steps allowed (e.g. p-4.5).",
+            "Quarter steps allowed (e.g. p-3.25)."
+          ],
+          "default": 0.25,
+          "description": "Smallest bare-class step allowed in v4 mode. Values outside this granularity become arbitrary.",
+          "scope": "resource"
+        },
+        "pxToTwPlus.supportedLanguages": {
           "type": "array",
           "items": {
             "type": "string",
             "enum": [
               "html",
               "javascript",
-              "typescript",
               "javascriptreact",
+              "typescript",
               "typescriptreact",
               "vue",
               "svelte",
-              "php",
-              "erb",
-              "handlebars"
+              "astro"
             ]
           },
           "default": [
             "html",
             "javascript",
-            "typescript",
             "javascriptreact",
+            "typescript",
             "typescriptreact",
             "vue",
-            "svelte"
+            "svelte",
+            "astro"
           ],
-          "description": "File types where conversion should be active",
+          "description": "Languages where conversion is active.",
           "scope": "window"
         },
-        "pxToTailwind.customSpacingScale": {
-          "type": "object",
-          "patternProperties": {
-            "^[a-zA-Z0-9-_]+$": {
-              "type": "number",
-              "minimum": 0
-            }
-          },
-          "additionalProperties": false,
-          "description": "Custom spacing scale mapping (e.g., {\"xs\": 2, \"sm\": 6})",
-          "scope": "resource"
-        },
-        "pxToTailwind.showVisualFeedback": {
+        "pxToTwPlus.showVisualFeedback": {
           "type": "boolean",
           "default": true,
-          "description": "Show visual feedback when conversions occur",
+          "description": "Briefly highlight converted ranges.",
           "scope": "window"
         },
-        "pxToTailwind.showHoverTooltips": {
+        "pxToTwPlus.showHoverTooltips": {
           "type": "boolean",
           "default": true,
-          "description": "Show pixel values in hover tooltips for Tailwind classes",
+          "description": "Show pixel/rem values when hovering Tailwind spacing classes.",
           "scope": "window"
         }
       }
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile && npm run lint",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts --fix",
-    "lint:check": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "test:unit": "npm run compile && npm run test -- --grep \"(?!integration|e2e|benchmark)\"",
-    "test:integration": "npm run compile && npm run test -- --grep \"integration\"",
-    "test:e2e": "npm run compile && npm run test -- --grep \"e2e\"",
-    "test:benchmark": "npm run compile && npm run test -- --grep \"benchmark\"",
-    "test:coverage": "npm run compile && npm run test -- --coverage",
-    "clean": "rimraf out",
-    "rebuild": "npm run clean && npm run compile",
+    "vscode:prepublish": "npm run check && npm run build -- --production",
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "check": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "icon": "node scripts/generate-icon.mjs",
     "package": "vsce package",
-    "publish": "vsce publish",
-    "version:patch": "npm version patch",
-    "version:minor": "npm version minor",
-    "version:major": "npm version major"
+    "publish:ms": "vsce publish",
+    "publish:openvsx": "ovsx publish",
+    "release": "node scripts/release.mjs"
   },
   "devDependencies": {
-    "@types/vscode": "^1.74.0",
-    "@types/node": "16.x",
-    "@types/mocha": "^10.0.1",
-    "@types/glob": "^8.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.45.0",
-    "@typescript-eslint/parser": "^5.45.0",
-    "eslint": "^8.28.0",
-    "typescript": "^4.9.4",
-    "@vscode/test-electron": "^2.2.0",
-    "@vscode/vsce": "^2.15.0",
-    "mocha": "^10.1.0",
-    "glob": "^8.0.3",
-    "rimraf": "^3.0.2"
+    "@eslint/js": "^9.18.0",
+    "@types/node": "^22.10.5",
+    "@types/vscode": "^1.84.0",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.18.0",
+    "ovsx": "^0.10.1",
+    "sharp": "^0.33.5",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0",
+    "vitest": "^3.0.2"
   }
 }
