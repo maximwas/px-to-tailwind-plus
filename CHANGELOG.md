@@ -5,6 +5,18 @@ All notable changes to **Px to Tailwind Plus** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-07-15
+
+### Added
+
+- Live conversion now fires the moment the `px` unit is completed, not only on a
+  boundary character.
+- `convertWhileTyping` setting to turn live conversion off.
+- `convertOnSave` setting to convert every px class in a file on save.
+- `showDiagnostics` setting: convertible px classes are highlighted with a
+  warning (yellow) and a "Convert to …" quick fix, plus a "Convert all in file"
+  action.
+
 ## [1.0.1] - 2026-07-15
 
 ### Changed
@@ -35,5 +47,6 @@ Initial release.
 - Commands: Convert File, Convert Selection, Toggle Extension, Show Logs.
 - Status bar toggle and brief visual feedback on conversion.
 
+[1.0.2]: https://github.com/maximwas/px-to-tailwind-plus/releases/tag/v1.0.2
 [1.0.1]: https://github.com/maximwas/px-to-tailwind-plus/releases/tag/v1.0.1
 [1.0.0]: https://github.com/maximwas/px-to-tailwind-plus/releases/tag/v1.0.0

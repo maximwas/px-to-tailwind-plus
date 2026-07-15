@@ -25,6 +25,9 @@ export interface Settings {
   supportedLanguages: string[];
   arbitraryFor: ValueKind[];
   classFunctions: string[];
+  convertWhileTyping: boolean;
+  convertOnSave: boolean;
+  showDiagnostics: boolean;
   showVisualFeedback: boolean;
   showHoverTooltips: boolean;
 }
@@ -112,6 +115,9 @@ export class SettingsStore implements vscode.Disposable {
         "classFunctions",
         DEFAULT_CLASS_FUNCTIONS,
       ),
+      convertWhileTyping: config.get<boolean>("convertWhileTyping", true),
+      convertOnSave: config.get<boolean>("convertOnSave", false),
+      showDiagnostics: config.get<boolean>("showDiagnostics", true),
       showVisualFeedback: config.get<boolean>("showVisualFeedback", true),
       showHoverTooltips: config.get<boolean>("showHoverTooltips", true),
     };
