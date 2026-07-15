@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="24" y1="16" x2="232" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#0891B2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect x="16" y="16" width="224" height="224" rx="52" fill="url(#bg)"/>
+
+  <!-- "px" wordmark -->
+  <text x="48" y="118" font-family="Helvetica, Arial, sans-serif" font-size="76"
+        font-weight="700" fill="#FFFFFF" letter-spacing="-2">px</text>
+
+  <!-- Conversion arrow -->
+  <g stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M64 158 H168"/>
+    <path d="M150 138 L184 158 L150 178"/>
+  </g>
+
+  <!-- Stylized Tailwind double-wave -->
+  <g fill="#FFFFFF" opacity="0.95">
+    <path d="M64 206c8-16 20-16 36 0 5.3 5.3 10.7 8 16 8s10.7-2.7 16-8c-8 16-20 16-36 0-5.3-5.3-10.7-8-16-8s-10.7 2.7-16 8z"/>
+  </g>
+</svg>
