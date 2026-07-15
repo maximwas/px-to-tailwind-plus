@@ -28,6 +28,8 @@ and **Cursor**.
   `indent`, `leading`, plus borders, ring, outline, stroke, font-size, radius
   and tracking.
 - **Negatives, variants and important** — `-mt-8px → -mt-2`, `md:p-16px → md:p-4`.
+- **Reduces arbitrary brackets** — already-written `p-[20px] → p-5`,
+  `text-[20px] → text-xl`; irreducible or non-px brackets are left alone.
 - **Arbitrary fallback** — off-scale values become `w-[50.5px]`.
 - **Custom theme aware** — reads `tailwind.config.*` (v3) and CSS `@theme`
   `--spacing-*` tokens (v4); exact px matches map to your named tokens.
@@ -58,6 +60,16 @@ Tailwind v3 (classic fixed scale):
 | `p-13px`      | `p-[13px]`     |
 | `rounded-4px` | `rounded`      |
 | `border-3px`  | `border-[3px]` |
+
+Already-written arbitrary brackets are reduced to the shortest token too (same
+scale, mode, theme and settings as the bare form):
+
+| You type      | You get       |
+| ------------- | ------------- |
+| `p-[20px]`    | `p-5`         |
+| `text-[20px]` | `text-xl`     |
+| `gap-[12px]`  | `gap-3`       |
+| `p-[7.3px]`   | `p-[7.3px]`   |
 
 ## Installation
 
