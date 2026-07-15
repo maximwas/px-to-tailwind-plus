@@ -2,7 +2,7 @@
   "name": "px-to-tailwind-plus",
   "displayName": "Px to Tailwind Plus",
   "description": "Convert pixel values to Tailwind CSS classes as you type — Tailwind v4 dynamic spacing & v3 classic scale, for VS Code and Cursor.",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "publisher": "maksym-vasianin",
   "license": "MIT",
   "homepage": "https://github.com/maximwas/px-to-tailwind-plus#readme",
