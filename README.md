@@ -5,8 +5,8 @@ the moment you hit space it becomes `p-4`. Works with **Tailwind v4** dynamic
 spacing (quarter-step scale) and **Tailwind v3** classic scale, in **VS Code**
 and **Cursor**.
 
-[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/maksymvasianin.px-to-tailwind-plus?label=VS%20Marketplace&color=0EA5E9)](https://marketplace.visualstudio.com/items?itemName=maksymvasianin.px-to-tailwind-plus)
-[![Open VSX](https://img.shields.io/open-vsx/v/maksymvasianin/px-to-tailwind-plus?label=Open%20VSX&color=0891B2)](https://open-vsx.org/extension/maksymvasianin/px-to-tailwind-plus)
+[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/maksym-vasianin.px-to-tailwind-plus?label=VS%20Marketplace&color=0EA5E9)](https://marketplace.visualstudio.com/items?itemName=maksym-vasianin.px-to-tailwind-plus)
+[![Open VSX](https://img.shields.io/open-vsx/v/maksym-vasianin/px-to-tailwind-plus?label=Open%20VSX&color=0891B2)](https://open-vsx.org/extension/maksym-vasianin/px-to-tailwind-plus)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
 ---
@@ -66,14 +66,14 @@ Tailwind v3 (classic fixed scale):
 Search **“Px to Tailwind Plus”** in the Extensions view, or:
 
 ```
-ext install maksymvasianin.px-to-tailwind-plus
+ext install maksym-vasianin.px-to-tailwind-plus
 ```
 
 ### Cursor
 
 Cursor installs from the **Open VSX** registry. Search **“Px to Tailwind Plus”**
 in Cursor’s Extensions view, or download the `.vsix` from the
-[Open VSX page](https://open-vsx.org/extension/maksymvasianin/px-to-tailwind-plus)
+[Open VSX page](https://open-vsx.org/extension/maksym-vasianin/px-to-tailwind-plus)
 and run **Extensions: Install from VSIX…**.
 
 ## Modes
