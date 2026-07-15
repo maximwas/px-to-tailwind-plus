@@ -56,13 +56,13 @@ export function parseToken(token: string): ParsedToken | null {
     util = util.slice(1);
   }
 
-  const m = util.match(TOKEN_RE);
-  if (!m) {
+  const match = util.match(TOKEN_RE);
+  if (!match) {
     return null;
   }
 
-  const property = m[1];
-  const rawNum = m[2];
+  const property = match[1];
+  const rawNum = match[2];
   const magnitude = parseFloat(rawNum);
   if (!Number.isFinite(magnitude)) {
     return null;
@@ -131,7 +131,7 @@ function buildOutput(
   opts: ConverterOptions,
 ): BuiltBody | null {
   const { property, negative, rawNum } = parsed;
-  const mag = Math.abs(parsed.px);
+  const magnitude = Math.abs(parsed.px);
 
   const bare = (value: string): string =>
     value === ""
@@ -146,55 +146,64 @@ function buildOutput(
     isArbitrary: false,
   });
 
+  if (opts.arbitraryFor?.includes(def.category)) {
+    return arbitrary();
+  }
+
   switch (def.category) {
     case "spacing": {
       const customEligible =
         opts.customSpacing && !(opts.mode === "v3" && def.v4Only);
       if (customEligible) {
-        const name = findCustomSpacing(opts.customSpacing!, mag);
+        const name = findCustomSpacing(opts.customSpacing!, magnitude);
         if (name !== null) {
           return scaled(name);
         }
+      }
+
+      // Tailwind's dedicated 1px utility, e.g. `w-px`, `-mt-px`.
+      if (magnitude === 1) {
+        return scaled("px");
       }
 
       if (opts.mode === "v3") {
         if (def.v4Only) {
           return arbitrary();
         }
-        const scale = V3_SPACING_PX_TO_SCALE.get(mag);
+        const scale = V3_SPACING_PX_TO_SCALE.get(magnitude);
         return scale !== undefined ? scaled(scale) : arbitrary();
       }
 
       // v4 dynamic spacing.
       const base = opts.spacingBasePx > 0 ? opts.spacingBasePx : 4;
-      const value = mag / base;
+      const value = magnitude / base;
       return isMultipleOf(value, opts.stepGranularity)
         ? scaled(formatScale(value))
         : arbitrary();
     }
 
     case "direct": {
-      if (!isInteger(mag)) {
+      if (!isInteger(magnitude)) {
         return arbitrary();
       }
-      const allowed = opts.mode === "v3" ? V3_DIRECT_PX.has(mag) : true;
+      const allowed = opts.mode === "v3" ? V3_DIRECT_PX.has(magnitude) : true;
       if (!allowed) {
         return arbitrary();
       }
-      if (def.bareAtOne && mag === 1) {
+      if (def.bareAtOne && magnitude === 1) {
         return scaled("");
       }
-      return scaled(String(mag));
+      return scaled(String(magnitude));
     }
 
     case "fontSize": {
-      const name = isInteger(mag) ? FONT_SIZE_PX_TO_NAME.get(mag) : undefined;
+      const name = isInteger(magnitude) ? FONT_SIZE_PX_TO_NAME.get(magnitude) : undefined;
       return name !== undefined ? scaled(name) : arbitrary();
     }
 
     case "radius": {
       const map = opts.mode === "v4" ? RADIUS_V4_PX_TO_NAME : RADIUS_V3_PX_TO_NAME;
-      const name = isInteger(mag) ? map.get(mag) : undefined;
+      const name = isInteger(magnitude) ? map.get(magnitude) : undefined;
       return name !== undefined ? scaled(name) : arbitrary();
     }
 

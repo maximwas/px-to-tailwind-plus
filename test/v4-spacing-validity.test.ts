@@ -16,7 +16,8 @@ describe("v4 dynamic spacing validity", () => {
   };
 
   // A representative sweep including quarter, half and integer steps.
-  const pxValues = [1, 2, 3, 4, 6, 7, 9, 13, 14, 16, 18, 22, 27, 100, 200, 350];
+  // (1px is excluded: it maps to the dedicated `px` utility, tested separately.)
+  const pxValues = [2, 3, 4, 6, 7, 9, 13, 14, 16, 18, 22, 27, 100, 200, 350];
 
   for (const px of pxValues) {
     it(`p-${px}px → valid quarter-step class`, () => {
@@ -38,6 +39,11 @@ describe("v4 dynamic spacing validity", () => {
       expect(describeClass(result!.output, opts)!.px).toBeCloseTo(px, 9);
     });
   }
+
+  it("maps 1px to the dedicated px utility", () => {
+    expect(convertToken("p-1px", opts)!.output).toBe("p-px");
+    expect(describeClass("p-px", opts)!.px).toBe(1);
+  });
 
   it("keeps non-quarter values out of the bare form", () => {
     // 2.5px / 4 = 0.625 → not a valid dynamic step.

@@ -104,6 +104,22 @@
           "description": "Smallest bare-class step allowed in v4 mode. Values outside this granularity become arbitrary.",
           "scope": "resource"
         },
+        "pxToTwPlus.arbitraryFor": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["spacing", "direct", "fontSize", "radius"],
+            "enumDescriptions": [
+              "Padding, margin, width/height, gap, inset, translate, …",
+              "Border/ring/outline/stroke widths.",
+              "font-size (text-*).",
+              "border-radius (rounded-*)."
+            ]
+          },
+          "default": [],
+          "markdownDescription": "Categories that should always use an arbitrary `[Npx]` value instead of a named/scale token. For example, add `fontSize` to keep `text-[14px]` instead of `text-sm`, or `radius` to keep `rounded-[8px]`.",
+          "scope": "resource"
+        },
         "pxToTwPlus.supportedLanguages": {
           "type": "array",
           "items": {
@@ -131,6 +147,23 @@
           ],
           "description": "Languages where conversion is active.",
           "scope": "window"
+        },
+        "pxToTwPlus.classFunctions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [
+            "clsx",
+            "cn",
+            "cx",
+            "cva",
+            "classnames",
+            "classNames",
+            "tw",
+            "twMerge",
+            "twJoin"
+          ],
+          "markdownDescription": "Names of class-utility functions whose string arguments are treated as class context (e.g. `clsx(\"p-16px\")`). Add your own helpers here.",
+          "scope": "resource"
         },
         "pxToTwPlus.showVisualFeedback": {
           "type": "boolean",
