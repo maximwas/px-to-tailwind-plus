@@ -2,7 +2,7 @@
   "name": "px-to-tailwind-plus",
   "displayName": "Px to Tailwind Plus",
   "description": "Convert pixel values to Tailwind CSS classes as you type — Tailwind v4 dynamic spacing & v3 classic scale, for VS Code and Cursor.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "maksymvasianin",
   "license": "MIT",
   "homepage": "https://github.com/maximwas/px-to-tailwind-plus#readme",
@@ -23,7 +23,12 @@
   },
   "packageManager": "pnpm@10.32.1",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "sharp", "keytar", "@vscode/vsce-sign"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "keytar",
+      "@vscode/vsce-sign"
+    ]
   },
   "categories": [
     "Formatters"
@@ -80,7 +85,10 @@
         },
         "pxToTwPlus.mode": {
           "type": "string",
-          "enum": ["v4", "v3"],
+          "enum": [
+            "v4",
+            "v3"
+          ],
           "enumDescriptions": [
             "Tailwind v4 — dynamic spacing with quarter-step bare classes (e.g. p-4.5).",
             "Tailwind v3 — fixed classic spacing scale; off-scale values become arbitrary."
@@ -98,7 +106,11 @@
         },
         "pxToTwPlus.stepGranularity": {
           "type": "number",
-          "enum": [1, 0.5, 0.25],
+          "enum": [
+            1,
+            0.5,
+            0.25
+          ],
           "enumDescriptions": [
             "Integers only — everything else becomes an arbitrary value.",
             "Half steps allowed (e.g. p-4.5).",
@@ -112,7 +124,12 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["spacing", "direct", "fontSize", "radius"],
+            "enum": [
+              "spacing",
+              "direct",
+              "fontSize",
+              "radius"
+            ],
             "enumDescriptions": [
               "Padding, margin, width/height, gap, inset, translate, …",
               "Border/ring/outline/stroke widths.",
@@ -154,7 +171,9 @@
         },
         "pxToTwPlus.classFunctions": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [
             "clsx",
             "cn",
