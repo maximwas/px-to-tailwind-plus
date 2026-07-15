@@ -189,9 +189,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "icon": "node scripts/generate-icon.mjs",
-    "package": "vsce package",
-    "publish:ms": "vsce publish",
-    "publish:openvsx": "ovsx publish",
+    "package": "vsce package --no-dependencies",
+    "publish:ms": "vsce publish --no-dependencies",
+    "publish:openvsx": "ovsx publish --no-dependencies",
     "release": "node scripts/release.mjs"
   },
   "dependencies": {

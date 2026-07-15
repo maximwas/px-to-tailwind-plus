@@ -7,6 +7,8 @@ node_modules/**
 coverage/**
 .gitignore
 .vscodeignore
+.nvmrc
+.vscode/**
 esbuild.js
 eslint.config.mjs
 vitest.config.ts
