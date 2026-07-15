@@ -141,7 +141,7 @@ gh secret set OVSX_TOKEN
 Cut a release with:
 
 ```bash
-npm run release -- patch   # or minor / major
+pnpm run release patch   # or minor / major
 ```
 
 which bumps the version, updates the changelog, commits, tags `vX.Y.Z` and
@@ -149,13 +149,15 @@ pushes — the tag triggers the release workflow.
 
 ## Development
 
+Uses [pnpm](https://pnpm.io) (see `packageManager` in `package.json`).
+
 ```bash
-npm install
-npm run watch     # esbuild in watch mode; press F5 to launch the Extension Host
-npm test          # Vitest unit tests for the converter core
-npm run check     # TypeScript type-check
-npm run lint      # ESLint
-npm run package   # build a .vsix
+pnpm install
+pnpm run watch     # esbuild in watch mode; press F5 to launch the Extension Host
+pnpm test          # Vitest unit tests for the converter core
+pnpm run check     # TypeScript type-check
+pnpm run lint      # ESLint
+pnpm run package   # build a .vsix
 ```
 
 ## License

@@ -12,29 +12,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Unit tests
-        run: npm test
+        run: pnpm test
 
       - name: Build
-        run: npm run build -- --production
+        run: pnpm run build -- --production
 
       - name: Package VSIX
-        run: npm run package
+        run: pnpm run package
 
       - name: Publish to VS Code Marketplace
-        run: npx vsce publish --no-dependencies --packagePath *.vsix -p "$VSCE_PAT"
+        run: pnpm exec vsce publish --no-dependencies --packagePath *.vsix -p "$VSCE_PAT"
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Publish to Open VSX
-        run: npx ovsx publish *.vsix -p "$OVSX_TOKEN"
+        run: pnpm exec ovsx publish *.vsix -p "$OVSX_TOKEN"
         env:
           OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
 

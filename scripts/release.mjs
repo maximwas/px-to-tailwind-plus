@@ -18,7 +18,7 @@ if (capture("git status --porcelain")) {
   process.exit(1);
 }
 
-run(`npm version ${bump} --no-git-tag-version`);
+run(`pnpm version ${bump} --no-git-tag-version`);
 
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 const version = pkg.version;
@@ -36,7 +36,7 @@ if (!changelog.includes(`## [${version}]`)) {
   writeFileSync("CHANGELOG.md", updated);
 }
 
-run("git add package.json package-lock.json CHANGELOG.md");
+run("git add package.json pnpm-lock.yaml CHANGELOG.md");
 run(`git commit -m "chore(release): v${version}"`);
 run(`git tag v${version}`);
 run("git push --follow-tags");

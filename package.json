@@ -21,6 +21,10 @@
   "engines": {
     "vscode": "^1.84.0"
   },
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp", "keytar", "@vscode/vsce-sign"]
+  },
   "categories": [
     "Formatters"
   ],
@@ -181,7 +185,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run check && npm run build -- --production",
+    "vscode:prepublish": "tsc --noEmit && node esbuild.js --production",
     "build": "node esbuild.js",
     "watch": "node esbuild.js --watch",
     "check": "tsc --noEmit",
