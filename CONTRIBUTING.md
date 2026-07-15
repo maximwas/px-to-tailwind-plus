@@ -13,13 +13,16 @@ Thanks for your interest in improving the extension!
 
 ## Development
 
+Uses [pnpm](https://pnpm.io) — the version is pinned via `packageManager` in
+`package.json` (enable with `corepack enable`).
+
 ```bash
-npm install
-npm run watch     # esbuild watch; press F5 in VS Code to launch the Extension Host
-npm test          # run unit tests
-npm run check     # TypeScript type-check (strict)
-npm run lint      # ESLint (flat config)
-npm run package   # produce a .vsix
+pnpm install
+pnpm run watch     # esbuild watch; press F5 in VS Code to launch the Extension Host
+pnpm test          # run unit tests
+pnpm run check     # TypeScript type-check (strict)
+pnpm run lint      # ESLint (flat config)
+pnpm run package   # produce a .vsix
 ```
 
 Runs on Node 24 (see `.nvmrc`). The extension bundle targets Node 18 for
@@ -34,7 +37,7 @@ Extension Host compatibility.
 
 ## Releasing
 
-Maintainers cut releases with `npm run release -- <patch|minor|major>`, which
+Maintainers cut releases with `pnpm run release <patch|minor|major>`, which
 bumps the version, updates the changelog, tags `vX.Y.Z` and pushes. The tag
 triggers the release workflow, which publishes to the VS Code Marketplace and
 Open VSX. See the README for the required `VSCE_PAT` and `OVSX_TOKEN` secrets.
