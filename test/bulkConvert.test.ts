@@ -42,4 +42,15 @@ describe("findConversions", () => {
   it("returns nothing when there is no class attribute", () => {
     expect(findConversions('<div id="p-16px">', v4)).toEqual([]);
   });
+
+  it("reduces the arbitrary bracket form inside a class", () => {
+    expect(apply('<div className="p-[20px] text-[20px]">', v4)).toBe(
+      '<div className="p-5 text-xl">',
+    );
+  });
+
+  it("does not flag class-like text inside a plain string literal", () => {
+    const input = `const input = '<div className="p-16px p-[20px]">';`;
+    expect(apply(input, v4)).toBe(input);
+  });
 });

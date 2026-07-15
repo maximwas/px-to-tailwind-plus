@@ -232,6 +232,43 @@ describe("variants and important markers are preserved", () => {
   });
 });
 
+describe("arbitrary bracket px form is reduced to the scale token", () => {
+  it("reduces bracket spacing on the v4 dynamic scale", () => {
+    expect(out("p-[20px]", v4())).toBe("p-5");
+    expect(out("p-[7px]", v4())).toBe("p-1.75");
+  });
+
+  it("reduces bracket spacing on the v3 classic scale", () => {
+    expect(out("p-[20px]", v3())).toBe("p-5");
+  });
+
+  it("reduces bracket font size", () => {
+    expect(out("text-[20px]", v4())).toBe("text-xl");
+  });
+
+  it("leaves irreducible bracket values untouched (no-op)", () => {
+    expect(convertToken("p-[7.3px]", v4())).toBeNull();
+  });
+
+  it("honours custom spacing tokens", () => {
+    expect(out("p-[20px]", v4({ customSpacing: { huge: 20 } }))).toBe("p-huge");
+  });
+
+  it("respects arbitraryFor by leaving the value arbitrary (no-op)", () => {
+    expect(convertToken("p-[16px]", v4({ arbitraryFor: ["spacing"] }))).toBeNull();
+  });
+
+  it("preserves negatives, important and variant chains", () => {
+    expect(out("md:-mt-[20px]", v4())).toBe("md:-mt-5");
+    expect(out("!p-[20px]", v4())).toBe("!p-5");
+  });
+
+  it("ignores bracket values in units other than px", () => {
+    expect(convertToken("p-[1.25rem]", v4())).toBeNull();
+    expect(convertToken("w-[50%]", v4())).toBeNull();
+  });
+});
+
 describe("non-tokens are ignored", () => {
   it("returns null for unsupported or malformed input", () => {
     expect(convertToken("p-16", v4())).toBeNull();

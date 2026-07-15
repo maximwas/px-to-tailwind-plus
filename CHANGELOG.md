@@ -5,6 +5,22 @@ All notable changes to **Px to Tailwind Plus** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Arbitrary bracket px classes are now reduced to their shortest scale token,
+  e.g. `p-[20px]` → `p-5`, `text-[20px]` → `text-xl`. Works through diagnostics,
+  the quick fix, convert-on-save and the bulk commands, and respects mode,
+  project theme, custom spacing and `arbitraryFor` just like the bare form.
+
+### Fixed
+
+- Diagnostics no longer flag class-like text that sits inside ordinary string
+  literals (e.g. `const s = '<div className="p-16px">'` in a `.ts` file). The
+  bulk/diagnostics/save path now uses the same class-context detection as live
+  typing, so all surfaces agree.
+
 ## [1.0.3] - 2026-07-15
 
 ### Changed

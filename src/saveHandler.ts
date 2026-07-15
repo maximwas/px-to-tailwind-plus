@@ -36,7 +36,11 @@ export class SaveHandler implements vscode.Disposable {
     document: vscode.TextDocument,
   ): Promise<vscode.TextEdit[]> {
     const options = this.settings.converterOptions(this.getContext());
-    const edits = findConversions(document.getText(), options).map((conversion) =>
+    const edits = findConversions(
+      document.getText(),
+      options,
+      this.settings.current.classFunctions,
+    ).map((conversion) =>
       vscode.TextEdit.replace(
         new vscode.Range(
           document.positionAt(conversion.start),

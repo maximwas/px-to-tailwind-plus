@@ -25,7 +25,11 @@ export interface ParsedToken {
   px: number;
 }
 
+// Bare-suffix form (`p-16px`) and the equivalent Tailwind arbitrary form
+// (`p-[16px]`). Both feed the same conversion; the bracket form is reduced to
+// the shortest scale token, e.g. `p-[20px]` → `p-5`.
 const TOKEN_RE = /^(.+)-(\d*\.?\d+)px$/;
+const BRACKET_TOKEN_RE = /^(.+)-\[(\d*\.?\d+)px\]$/;
 
 /**
  * Parses a candidate class token like `md:-mt-8px` into its parts.
@@ -56,7 +60,7 @@ export function parseToken(token: string): ParsedToken | null {
     util = util.slice(1);
   }
 
-  const match = util.match(TOKEN_RE);
+  const match = util.match(TOKEN_RE) ?? util.match(BRACKET_TOKEN_RE);
   if (!match) {
     return null;
   }

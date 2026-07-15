@@ -69,7 +69,11 @@ export class DiagnosticsProvider implements vscode.Disposable {
     }
 
     const options = this.settings.converterOptions(this.getContext());
-    const diagnostics = findConversions(document.getText(), options).map(
+    const diagnostics = findConversions(
+      document.getText(),
+      options,
+      settings.classFunctions,
+    ).map(
       (conversion) => {
         const range = new vscode.Range(
           document.positionAt(conversion.start),
