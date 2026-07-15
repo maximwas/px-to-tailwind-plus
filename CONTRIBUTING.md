@@ -40,4 +40,22 @@ Extension Host compatibility.
 Maintainers cut releases with `pnpm run release <patch|minor|major>`, which
 bumps the version, updates the changelog, tags `vX.Y.Z` and pushes. The tag
 triggers the release workflow, which publishes to the VS Code Marketplace and
-Open VSX. See the README for the required `VSCE_PAT` and `OVSX_TOKEN` secrets.
+Open VSX and attaches the `.vsix` to the GitHub Release.
+
+Two repository secrets are required:
+
+- **`VSCE_PAT`** — a Personal Access Token from
+  [Azure DevOps](https://dev.azure.com) with **Marketplace → Manage** scope,
+  for the VS Code Marketplace.
+- **`OVSX_TOKEN`** — an access token from [open-vsx.org](https://open-vsx.org)
+  (User Settings → Access Tokens), for Open VSX / Cursor.
+
+Add them with the GitHub CLI:
+
+```bash
+gh secret set VSCE_PAT
+gh secret set OVSX_TOKEN
+```
+
+For a brand-new Open VSX namespace, create it once:
+`pnpm exec ovsx create-namespace <publisher> -p <OVSX_TOKEN>`.
