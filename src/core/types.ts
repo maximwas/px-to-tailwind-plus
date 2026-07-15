@@ -23,6 +23,11 @@ export interface ConverterOptions {
    * Exact px matches take precedence over the default scale.
    */
   customSpacing?: Record<string, number>;
+  /**
+   * Categories that should always emit arbitrary `[Npx]` values instead of
+   * named/scale tokens (e.g. force `text-[14px]` rather than `text-sm`).
+   */
+  arbitraryFor?: ValueKind[];
 }
 
 export interface ConversionResult {

@@ -55,7 +55,9 @@ export function describeClass(
   }
 
   let mag: number | null = null;
-  if (opts.customSpacing && opts.customSpacing[valueToken] !== undefined) {
+  if (valueToken === "px") {
+    mag = 1; // Tailwind's fixed 1px utility.
+  } else if (opts.customSpacing && opts.customSpacing[valueToken] !== undefined) {
     mag = opts.customSpacing[valueToken];
   } else {
     const num = parseFloat(valueToken);

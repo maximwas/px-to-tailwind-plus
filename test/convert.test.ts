@@ -28,7 +28,14 @@ describe("v4 spacing — quarter-step dynamic scale", () => {
   it("maps quarter and half steps to bare classes", () => {
     expect(out("px-13px", v4())).toBe("px-3.25");
     expect(out("p-18px", v4())).toBe("p-4.5");
-    expect(out("p-1px", v4())).toBe("p-0.25");
+  });
+
+  it("emits Tailwind's dedicated 1px utility", () => {
+    expect(out("w-1px", v4())).toBe("w-px");
+    expect(out("p-1px", v4())).toBe("p-px");
+    expect(out("-mt-1px", v4())).toBe("-mt-px");
+    expect(out("size-1px", v4())).toBe("size-px");
+    expect(out("p-1px", v3())).toBe("p-px");
   });
 
   it("supports negatives", () => {
@@ -62,26 +69,28 @@ describe("v4 spacing — quarter-step dynamic scale", () => {
 
 describe("v4 spacingBasePx override", () => {
   it("divides by the configured base", () => {
-    const o = v4({ spacingBasePx: 8 });
-    expect(out("p-16px", o)).toBe("p-2");
-    expect(out("p-4px", o)).toBe("p-0.5");
-    expect(out("p-2px", o)).toBe("p-0.25");
-    expect(out("p-1px", o)).toBe("p-[1px]"); // 0.125 not a quarter step
+    const options = v4({ spacingBasePx: 8 });
+    expect(out("p-16px", options)).toBe("p-2");
+    expect(out("p-4px", options)).toBe("p-0.5");
+    expect(out("p-2px", options)).toBe("p-0.25");
+    expect(out("p-1px", options)).toBe("p-px"); // dedicated 1px utility, base-independent
+    expect(out("p-3px", options)).toBe("p-[3px]"); // 0.375 not a quarter step
   });
 });
 
 describe("stepGranularity", () => {
   it("0.5 restricts quarter steps to arbitrary", () => {
-    const o = v4({ stepGranularity: 0.5 });
-    expect(out("p-18px", o)).toBe("p-4.5");
-    expect(out("px-13px", o)).toBe("px-[13px]"); // 3.25 not a half step
+    const options = v4({ stepGranularity: 0.5 });
+    expect(out("p-18px", options)).toBe("p-4.5");
+    expect(out("px-13px", options)).toBe("px-[13px]"); // 3.25 not a half step
   });
 
   it("1 restricts to integers only", () => {
-    const o = v4({ stepGranularity: 1 });
-    expect(out("p-16px", o)).toBe("p-4");
-    expect(out("p-18px", o)).toBe("p-[18px]"); // 4.5 not an integer
-    expect(out("p-1px", o)).toBe("p-[1px]"); // 0.25 not an integer
+    const options = v4({ stepGranularity: 1 });
+    expect(out("p-16px", options)).toBe("p-4");
+    expect(out("p-18px", options)).toBe("p-[18px]"); // 4.5 not an integer
+    expect(out("p-2px", options)).toBe("p-[2px]"); // 0.5 not an integer
+    expect(out("p-1px", options)).toBe("p-px"); // dedicated utility, unaffected by granularity
   });
 });
 
@@ -167,21 +176,42 @@ describe("tracking (always arbitrary px)", () => {
 
 describe("custom theme spacing", () => {
   it("v3 maps exact px matches to the custom key", () => {
-    const o = v3({ customSpacing: { sm: 6 } });
-    expect(out("p-6px", o)).toBe("p-sm");
-    expect(out("w-6px", o)).toBe("w-sm");
-    expect(out("p-8px", o)).toBe("p-2"); // no custom match, default scale
+    const options = v3({ customSpacing: { sm: 6 } });
+    expect(out("p-6px", options)).toBe("p-sm");
+    expect(out("w-6px", options)).toBe("w-sm");
+    expect(out("p-8px", options)).toBe("p-2"); // no custom match, default scale
   });
 
   it("v4 custom tokens win over the dynamic scale", () => {
-    const o = v4({ customSpacing: { huge: 200 } });
-    expect(out("w-200px", o)).toBe("w-huge");
-    expect(out("p-16px", o)).toBe("p-4"); // unaffected
+    const options = v4({ customSpacing: { huge: 200 } });
+    expect(out("w-200px", options)).toBe("w-huge");
+    expect(out("p-16px", options)).toBe("p-4"); // unaffected
   });
 
   it("v3 does not apply custom spacing to v4-only props", () => {
-    const o = v3({ customSpacing: { sm: 6 } });
-    expect(out("min-w-6px", o)).toBe("min-w-[6px]");
+    const options = v3({ customSpacing: { sm: 6 } });
+    expect(out("min-w-6px", options)).toBe("min-w-[6px]");
+  });
+});
+
+describe("arbitraryFor setting forces arbitrary values", () => {
+  it("keeps font sizes and radii as arbitrary when requested", () => {
+    expect(out("text-14px", v4({ arbitraryFor: ["fontSize"] }))).toBe(
+      "text-[14px]",
+    );
+    expect(out("rounded-8px", v4({ arbitraryFor: ["radius"] }))).toBe(
+      "rounded-[8px]",
+    );
+    expect(out("border-2px", v4({ arbitraryFor: ["direct"] }))).toBe(
+      "border-[2px]",
+    );
+    expect(out("p-16px", v4({ arbitraryFor: ["spacing"] }))).toBe("p-[16px]");
+  });
+
+  it("leaves other categories untouched", () => {
+    const options = v4({ arbitraryFor: ["fontSize"] });
+    expect(out("p-16px", options)).toBe("p-4");
+    expect(out("rounded-8px", options)).toBe("rounded-lg");
   });
 });
 
