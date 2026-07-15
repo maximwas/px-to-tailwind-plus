@@ -2,7 +2,7 @@
   "name": "px-to-tailwind-plus",
   "displayName": "Px to Tailwind Plus",
   "description": "Convert pixel values to Tailwind CSS classes as you type — Tailwind v4 dynamic spacing & v3 classic scale, for VS Code and Cursor.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "maksymvasianin",
   "license": "MIT",
   "homepage": "https://github.com/maximwas/px-to-tailwind-plus#readme",
@@ -186,6 +186,24 @@
             "twJoin"
           ],
           "markdownDescription": "Names of class-utility functions whose string arguments are treated as class context (e.g. `clsx(\"p-16px\")`). Add your own helpers here.",
+          "scope": "resource"
+        },
+        "pxToTwPlus.convertWhileTyping": {
+          "type": "boolean",
+          "default": true,
+          "description": "Convert px classes live as you type (on completing `px` or a boundary character). Turn off to only convert via the quick fix or on save.",
+          "scope": "resource"
+        },
+        "pxToTwPlus.convertOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Also convert every px class in the file when it is saved.",
+          "scope": "resource"
+        },
+        "pxToTwPlus.showDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Highlight px classes that can be converted with a warning and a quick fix.",
           "scope": "resource"
         },
         "pxToTwPlus.showVisualFeedback": {
