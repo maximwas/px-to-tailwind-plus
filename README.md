@@ -120,45 +120,11 @@ Open the Command Palette and search “Px to Tailwind Plus”:
 - **Toggle Extension** — enable/disable (also from the status bar).
 - **Show Logs** — open the output channel.
 
-## Publishing (maintainers)
+## Contributing
 
-Releases are published to both marketplaces by CI. Two repository secrets are
-required:
-
-- **`VSCE_PAT`** — a Personal Access Token from
-  [Azure DevOps](https://dev.azure.com) with **Marketplace → Manage** scope,
-  for the VS Code Marketplace.
-- **`OVSX_TOKEN`** — an access token from [open-vsx.org](https://open-vsx.org)
-  (User Settings → Access Tokens), for Open VSX / Cursor.
-
-Add them with the GitHub CLI:
-
-```bash
-gh secret set VSCE_PAT
-gh secret set OVSX_TOKEN
-```
-
-Cut a release with:
-
-```bash
-pnpm run release patch   # or minor / major
-```
-
-which bumps the version, updates the changelog, commits, tags `vX.Y.Z` and
-pushes — the tag triggers the release workflow.
-
-## Development
-
-Uses [pnpm](https://pnpm.io) (see `packageManager` in `package.json`).
-
-```bash
-pnpm install
-pnpm run watch     # esbuild in watch mode; press F5 to launch the Extension Host
-pnpm test          # Vitest unit tests for the converter core
-pnpm run check     # TypeScript type-check
-pnpm run lint      # ESLint
-pnpm run package   # build a .vsix
-```
+Issues and pull requests are welcome. See
+[CONTRIBUTING.md](./CONTRIBUTING.md) for the development, testing and release
+workflow.
 
 ## License
 
