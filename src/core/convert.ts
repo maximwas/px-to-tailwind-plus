@@ -23,6 +23,8 @@ export interface ParsedToken {
   rawNum: string;
   /** Signed pixel value. */
   px: number;
+  /** True when the input used the arbitrary bracket form, e.g. `p-[20px]`. */
+  bracket: boolean;
 }
 
 // Bare-suffix form (`p-16px`) and the equivalent Tailwind arbitrary form
@@ -60,7 +62,8 @@ export function parseToken(token: string): ParsedToken | null {
     util = util.slice(1);
   }
 
-  const match = util.match(TOKEN_RE) ?? util.match(BRACKET_TOKEN_RE);
+  const bareMatch = util.match(TOKEN_RE);
+  const match = bareMatch ?? util.match(BRACKET_TOKEN_RE);
   if (!match) {
     return null;
   }
@@ -79,6 +82,7 @@ export function parseToken(token: string): ParsedToken | null {
     property,
     rawNum,
     px: negative ? -magnitude : magnitude,
+    bracket: bareMatch === null,
   };
 }
 
@@ -92,6 +96,11 @@ export function convertToken(
 ): ConversionResult | null {
   const parsed = parseToken(token);
   if (!parsed) {
+    return null;
+  }
+
+  // The bracket form is opt-out; the bare suffix form is always converted.
+  if (parsed.bracket && opts.convertArbitraryBrackets === false) {
     return null;
   }
 

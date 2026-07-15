@@ -269,6 +269,26 @@ describe("arbitrary bracket px form is reduced to the scale token", () => {
   });
 });
 
+describe("convertArbitraryBrackets setting gates the bracket form", () => {
+  it("skips bracket-form conversion when disabled", () => {
+    expect(
+      convertToken("p-[20px]", v4({ convertArbitraryBrackets: false })),
+    ).toBeNull();
+    expect(
+      convertToken("text-[20px]", v4({ convertArbitraryBrackets: false })),
+    ).toBeNull();
+  });
+
+  it("still converts the bare suffix form when disabled", () => {
+    expect(out("p-16px", v4({ convertArbitraryBrackets: false }))).toBe("p-4");
+  });
+
+  it("converts the bracket form when enabled (default)", () => {
+    expect(out("p-[20px]", v4({ convertArbitraryBrackets: true }))).toBe("p-5");
+    expect(out("p-[20px]", v4())).toBe("p-5");
+  });
+});
+
 describe("non-tokens are ignored", () => {
   it("returns null for unsupported or malformed input", () => {
     expect(convertToken("p-16", v4())).toBeNull();

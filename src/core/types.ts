@@ -28,6 +28,11 @@ export interface ConverterOptions {
    * named/scale tokens (e.g. force `text-[14px]` rather than `text-sm`).
    */
   arbitraryFor?: ValueKind[];
+  /**
+   * Whether to reduce the arbitrary bracket form (`p-[20px]` → `p-5`). The bare
+   * suffix form (`p-20px`) is always converted. Defaults to true when omitted.
+   */
+  convertArbitraryBrackets?: boolean;
 }
 
 export interface ConversionResult {

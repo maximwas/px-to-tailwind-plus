@@ -2,7 +2,7 @@
   "name": "px-to-tailwind-plus",
   "displayName": "Px to Tailwind Plus",
   "description": "Convert pixel values to Tailwind CSS classes as you type — Tailwind v4 dynamic spacing & v3 classic scale, for VS Code and Cursor.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "maksym-vasianin",
   "license": "MIT",
   "homepage": "https://github.com/maximwas/px-to-tailwind-plus#readme",
@@ -139,6 +139,12 @@
           },
           "default": [],
           "markdownDescription": "Categories that should always use an arbitrary `[Npx]` value instead of a named/scale token. For example, add `fontSize` to keep `text-[14px]` instead of `text-sm`, or `radius` to keep `rounded-[8px]`.",
+          "scope": "resource"
+        },
+        "pxToTwPlus.convertArbitraryBrackets": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Reduce the arbitrary bracket form to the shortest scale token (`p-[20px]` → `p-5`, `text-[20px]` → `text-xl`). Turn off to leave `[Npx]` classes untouched — no conversion and no diagnostic highlight for them. The bare suffix form (`p-20px`) is always converted.",
           "scope": "resource"
         },
         "pxToTwPlus.supportedLanguages": {

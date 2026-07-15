@@ -24,6 +24,7 @@ export interface Settings {
   stepGranularity: StepGranularity;
   supportedLanguages: string[];
   arbitraryFor: ValueKind[];
+  convertArbitraryBrackets: boolean;
   classFunctions: string[];
   convertWhileTyping: boolean;
   convertOnSave: boolean;
@@ -78,6 +79,7 @@ export class SettingsStore implements vscode.Disposable {
       stepGranularity: this.value.stepGranularity,
       customSpacing: context?.customSpacing,
       arbitraryFor: this.value.arbitraryFor,
+      convertArbitraryBrackets: this.value.convertArbitraryBrackets,
     };
   }
 
@@ -110,6 +112,10 @@ export class SettingsStore implements vscode.Disposable {
       arbitraryFor: (config.get<string[]>("arbitraryFor", []) ?? []).filter(
         (candidate): candidate is ValueKind =>
           ARBITRARY_CATEGORIES.includes(candidate as ValueKind),
+      ),
+      convertArbitraryBrackets: config.get<boolean>(
+        "convertArbitraryBrackets",
+        true,
       ),
       classFunctions: config.get<string[]>(
         "classFunctions",

@@ -5,6 +5,14 @@ All notable changes to **Px to Tailwind Plus** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-07-15
+
+### Added
+
+- `convertArbitraryBrackets` setting (default on). Turn it off to leave the
+  `[Npx]` bracket form untouched — no conversion and no diagnostic highlight for
+  it. The bare suffix form (`p-20px`) is always converted.
+
 ## [1.1.0] - 2026-07-15
 
 ### Added

@@ -107,6 +107,7 @@ Set `pxToTwPlus.mode`:
 | `pxToTwPlus.spacingBasePx`      | `4`                 | Base spacing unit (Tailwind `--spacing`). `value = px / base`.                 |
 | `pxToTwPlus.stepGranularity`    | `0.25`              | Smallest bare-class step in v4 (`1`, `0.5` or `0.25`).                         |
 | `pxToTwPlus.arbitraryFor`       | `[]`                | Categories to always keep arbitrary — e.g. `["fontSize"]` keeps `text-[14px]`. |
+| `pxToTwPlus.convertArbitraryBrackets` | `true`        | Reduce the bracket form (`p-[20px]` → `p-5`). Off = `[Npx]` left as-is, no highlight. |
 | `pxToTwPlus.classFunctions`     | `["clsx", "cn", …]` | Class-utility functions whose string args count as class context.             |
 | `pxToTwPlus.convertWhileTyping` | `true`              | Convert live as you type. Turn off to convert only via quick fix or on save.   |
 | `pxToTwPlus.convertOnSave`      | `false`             | Convert every px class in the file on save.                                    |
