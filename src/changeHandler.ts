@@ -50,7 +50,11 @@ export class ChangeHandler implements vscode.Disposable {
   private async handleChange(
     event: vscode.TextDocumentChangeEvent,
   ): Promise<void> {
-    if (this.applying || !this.settings.current.enabled) {
+    if (
+      this.applying ||
+      !this.settings.current.enabled ||
+      !this.settings.current.convertWhileTyping
+    ) {
       return;
     }
 
@@ -64,17 +68,24 @@ export class ChangeHandler implements vscode.Disposable {
       return;
     }
     const change = event.contentChanges[0];
-    if (
-      change.rangeLength !== 0 ||
-      change.text.length !== 1 ||
-      !BOUNDARY_TRIGGERS.has(change.text)
-    ) {
+    if (change.rangeLength !== 0 || change.text.length !== 1) {
+      return;
+    }
+    // Convert the moment the `px` unit is completed (the typed `x`), and also
+    // when a boundary character ends the token (space, quote, `}`, newline, …).
+    const typed = change.text;
+    const isBoundary = BOUNDARY_TRIGGERS.has(typed);
+    const completesPx = typed === "x";
+    if (!isBoundary && !completesPx) {
       return;
     }
 
-    const tokenEnd = change.range.start;
-    const lineText = document.lineAt(tokenEnd.line).text;
-    const endCharacter = tokenEnd.character;
+    const line = change.range.start.line;
+    // Boundary chars sit after the token; a completed `px` includes the typed x.
+    const endCharacter = isBoundary
+      ? change.range.start.character
+      : change.range.start.character + 1;
+    const lineText = document.lineAt(line).text;
 
     let startCharacter = endCharacter;
     while (startCharacter > 0 && !TOKEN_STOPS.has(lineText[startCharacter - 1])) {
@@ -95,7 +106,8 @@ export class ChangeHandler implements vscode.Disposable {
       return;
     }
 
-    const tokenStart = new vscode.Position(tokenEnd.line, startCharacter);
+    const tokenStart = new vscode.Position(line, startCharacter);
+    const tokenEnd = new vscode.Position(line, endCharacter);
     const prefix = this.lookbackPrefix(document, tokenStart);
     if (
       !isClassAttributeContext(prefix, token, this.settings.current.classFunctions)

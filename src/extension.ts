@@ -7,6 +7,9 @@ import { HoverProvider } from "./hover";
 import { VisualFeedback } from "./visualFeedback";
 import { StatusBar } from "./statusBar";
 import { registerCommands } from "./commands";
+import { SaveHandler } from "./saveHandler";
+import { DiagnosticsProvider } from "./diagnostics";
+import { ConvertCodeActionProvider } from "./codeActions";
 
 export function activate(context: vscode.ExtensionContext): void {
   const logger = new Logger();
@@ -30,6 +33,14 @@ export function activate(context: vscode.ExtensionContext): void {
     hoverProvider,
   );
 
+  const saveHandler = new SaveHandler(settings, getContext, logger);
+  const diagnostics = new DiagnosticsProvider(settings, getContext);
+  const codeActionRegistration = vscode.languages.registerCodeActionsProvider(
+    DEFAULT_LANGUAGES,
+    new ConvertCodeActionProvider(),
+    { providedCodeActionKinds: ConvertCodeActionProvider.providedCodeActionKinds },
+  );
+
   registerCommands(context, {
     settings,
     logger,
@@ -47,6 +58,9 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBar,
     changeHandler,
     hoverRegistration,
+    saveHandler,
+    diagnostics,
+    codeActionRegistration,
   );
 
   void themeProvider.reload();

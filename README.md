@@ -14,7 +14,11 @@ and **Cursor**.
 ## Features
 
 - **Type-to-convert** inside `class`, `className`, `:class` and `class:`
-  attributes — completes when you type a space, quote, backtick, `}` or newline.
+  attributes — fires the moment you finish the `px` unit (or type a space,
+  quote, backtick, `}` or newline).
+- **Yellow highlight + quick fix** — convertible px classes are flagged with a
+  warning and a one-click "Convert to …" fix (great for pasted code).
+- **Convert on save** — optionally rewrite every px class in the file on save.
 - **Tailwind v4 dynamic spacing** — `p-13px → p-3.25`, `p-18px → p-4.5`,
   `w-200px → w-50`, with a configurable base and quarter/half/integer steps.
 - **Tailwind v3 classic scale** — maps to the fixed scale, everything else
@@ -92,6 +96,9 @@ Set `pxToTwPlus.mode`:
 | `pxToTwPlus.stepGranularity`    | `0.25`              | Smallest bare-class step in v4 (`1`, `0.5` or `0.25`).                         |
 | `pxToTwPlus.arbitraryFor`       | `[]`                | Categories to always keep arbitrary — e.g. `["fontSize"]` keeps `text-[14px]`. |
 | `pxToTwPlus.classFunctions`     | `["clsx", "cn", …]` | Class-utility functions whose string args count as class context.             |
+| `pxToTwPlus.convertWhileTyping` | `true`              | Convert live as you type. Turn off to convert only via quick fix or on save.   |
+| `pxToTwPlus.convertOnSave`      | `false`             | Convert every px class in the file on save.                                    |
+| `pxToTwPlus.showDiagnostics`    | `true`              | Highlight convertible px classes (yellow) with a quick fix.                     |
 | `pxToTwPlus.supportedLanguages` | all 8 languages     | Languages where conversion runs.                                              |
 | `pxToTwPlus.showVisualFeedback` | `true`              | Briefly highlight converted ranges.                                            |
 | `pxToTwPlus.showHoverTooltips`  | `true`              | Show px/rem values on hover.                                                   |
