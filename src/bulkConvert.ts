@@ -18,7 +18,7 @@ export interface BulkConversion {
  * real, convertible class utility.
  */
 const PX_TOKEN_RE =
-  /(?:[\w-]+:)*!?-?[a-z][\w-]*-(?:\d*\.?\d+px|\[\d*\.?\d+px\])/gi;
+  /(?:[\w-]+:)*!?-?[a-z][\w-]*-(?:\d*\.?\d+(?:px|rem)|\[\d*\.?\d+(?:px|rem)\])/gi;
 
 /** Matches class attribute values and captures the quote + inner content. */
 const CLASS_VALUE_RE =
@@ -26,6 +26,12 @@ const CLASS_VALUE_RE =
 
 /** Matches a quoted string and captures the quote + inner content. */
 const STRING_RE = /(["'`])([\s\S]*?)\1/g;
+
+/**
+ * Tailwind's `@apply` in CSS/SCSS, capturing the bare utility list. The rule
+ * ends at `;` or a brace, so the value never runs past it.
+ */
+const APPLY_RE = /@apply\b([^;{}]*)/g;
 
 const escapeRegExp = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -82,6 +88,13 @@ export function findConversions(
     const content = attribute[2];
     // The closing quote is the final char of the match; content precedes it.
     collect(content, attribute.index + attribute[0].length - 1 - content.length);
+  }
+
+  APPLY_RE.lastIndex = 0;
+  let applyRule: RegExpExecArray | null;
+  while ((applyRule = APPLY_RE.exec(text)) !== null) {
+    const utilities = applyRule[1];
+    collect(utilities, applyRule.index + applyRule[0].length - utilities.length);
   }
 
   if (classFunctions.length > 0) {

@@ -50,6 +50,13 @@ async function convertActiveEditor(
   }
 
   const document = editor.document;
+  if (deps.settings.isIgnoredFile(document.uri)) {
+    vscode.window.showInformationMessage(
+      "Px to Tailwind Plus: this file is excluded by pxToTwPlus.ignoreFiles.",
+    );
+    return;
+  }
+
   const options = deps.settings.converterOptions(deps.getContext());
   const ranges: vscode.Range[] =
     selectionOnly && editor.selections.some((selection) => !selection.isEmpty)

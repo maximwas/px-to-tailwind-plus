@@ -24,6 +24,16 @@ export interface ConverterOptions {
    */
   customSpacing?: Record<string, number>;
   /**
+   * Custom font-size tokens, keyed by class name → px.
+   * v3: `theme.fontSize`. v4: `--text-*` tokens in `@theme`.
+   */
+  customFontSize?: Record<string, number>;
+  /**
+   * Custom border-radius tokens, keyed by class name → px.
+   * v3: `theme.borderRadius`. v4: `--radius-*` tokens in `@theme`.
+   */
+  customRadius?: Record<string, number>;
+  /**
    * Categories that should always emit arbitrary `[Npx]` values instead of
    * named/scale tokens (e.g. force `text-[14px]` rather than `text-sm`).
    */

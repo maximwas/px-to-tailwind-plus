@@ -1,7 +1,11 @@
 import * as vscode from "vscode";
 import type { ConversionContext, SettingsStore } from "../settings";
 import type { Logger } from "../logger";
-import { parseTailwindConfigSource, parseThemeCss } from "./parse";
+import {
+  parseTailwindConfigSource,
+  parseThemeCss,
+  type ConfigTokens,
+} from "./parse";
 import { readConfigViaChildProcess } from "./childConfigReader";
 
 const CONFIG_GLOB = "**/tailwind.config.{js,cjs,mjs,ts}";
@@ -56,33 +60,43 @@ export class ThemeProvider implements vscode.Disposable {
       MAX_CONFIG_FILES,
     );
     const customSpacing: Record<string, number> = {};
+    const customFontSize: Record<string, number> = {};
+    const customRadius: Record<string, number> = {};
 
     for (const file of files) {
-      const spacing = await this.readSingleConfig(file);
-      Object.assign(customSpacing, spacing);
+      const tokens = await this.readSingleConfig(file);
+      Object.assign(customSpacing, tokens.spacing);
+      Object.assign(customFontSize, tokens.fontSize);
+      Object.assign(customRadius, tokens.radius);
     }
 
-    if (Object.keys(customSpacing).length > 0) {
+    const total =
+      Object.keys(customSpacing).length +
+      Object.keys(customFontSize).length +
+      Object.keys(customRadius).length;
+    if (total > 0) {
       this.logger.info(
-        `Loaded ${Object.keys(customSpacing).length} custom spacing token(s) from tailwind.config.`,
+        `Loaded ${total} custom token(s) from tailwind.config ` +
+          `(spacing: ${Object.keys(customSpacing).length}, ` +
+          `fontSize: ${Object.keys(customFontSize).length}, ` +
+          `radius: ${Object.keys(customRadius).length}).`,
       );
     }
-    return { customSpacing };
+    return { customSpacing, customFontSize, customRadius };
   }
 
-  private async readSingleConfig(
-    file: vscode.Uri,
-  ): Promise<Record<string, number>> {
+  private async readSingleConfig(file: vscode.Uri): Promise<ConfigTokens> {
+    const empty: ConfigTokens = { spacing: {}, fontSize: {}, radius: {} };
     const isRequireable = /\.(js|cjs)$/.test(file.fsPath);
     if (isRequireable) {
       const viaChild = await readConfigViaChildProcess(file.fsPath);
-      if (viaChild && Object.keys(viaChild).length > 0) {
+      if (viaChild && hasTokens(viaChild)) {
         return viaChild;
       }
     }
     // Fallback: parse the source without executing it (covers .ts/.mjs too).
     const source = await this.readFileText(file);
-    return source ? parseTailwindConfigSource(source) : {};
+    return source ? parseTailwindConfigSource(source) : empty;
   }
 
   private async readV4Css(): Promise<ConversionContext> {
@@ -92,6 +106,8 @@ export class ThemeProvider implements vscode.Disposable {
       MAX_CSS_FILES,
     );
     const customSpacing: Record<string, number> = {};
+    const customFontSize: Record<string, number> = {};
+    const customRadius: Record<string, number> = {};
     let spacingBasePx: number | undefined;
 
     for (const file of files) {
@@ -101,20 +117,26 @@ export class ThemeProvider implements vscode.Disposable {
       }
       const parsed = parseThemeCss(source);
       Object.assign(customSpacing, parsed.customSpacing);
+      Object.assign(customFontSize, parsed.customFontSize);
+      Object.assign(customRadius, parsed.customRadius);
       if (parsed.spacingBasePx !== undefined) {
         spacingBasePx = parsed.spacingBasePx;
       }
     }
 
-    if (Object.keys(customSpacing).length > 0 || spacingBasePx !== undefined) {
+    const total =
+      Object.keys(customSpacing).length +
+      Object.keys(customFontSize).length +
+      Object.keys(customRadius).length;
+    if (total > 0 || spacingBasePx !== undefined) {
       this.logger.info(
-        `Loaded theme from CSS @theme (tokens: ${Object.keys(customSpacing).length}` +
+        `Loaded theme from CSS @theme (tokens: ${total}` +
           `${spacingBasePx !== undefined ? `, --spacing: ${spacingBasePx}px` : ""}).`,
       );
     }
     return spacingBasePx !== undefined
-      ? { customSpacing, spacingBasePx }
-      : { customSpacing };
+      ? { customSpacing, customFontSize, customRadius, spacingBasePx }
+      : { customSpacing, customFontSize, customRadius };
   }
 
   private async readFileText(file: vscode.Uri): Promise<string | null> {
@@ -155,4 +177,13 @@ export class ThemeProvider implements vscode.Disposable {
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposables.length = 0;
   }
+}
+
+/** True when a config produced at least one usable token. */
+function hasTokens(tokens: ConfigTokens): boolean {
+  return (
+    Object.keys(tokens.spacing).length > 0 ||
+    Object.keys(tokens.fontSize).length > 0 ||
+    Object.keys(tokens.radius).length > 0
+  );
 }

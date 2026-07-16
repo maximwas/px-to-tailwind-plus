@@ -21,17 +21,26 @@ export interface ParsedToken {
   property: string;
   /** The raw numeric text exactly as typed, e.g. "50.5". */
   rawNum: string;
-  /** Signed pixel value. */
+  /** Signed pixel value, with rem already normalised against the root. */
   px: number;
   /** True when the input used the arbitrary bracket form, e.g. `p-[20px]`. */
   bracket: boolean;
+  /** The unit exactly as written. */
+  unit: "px" | "rem";
 }
 
 // Bare-suffix form (`p-16px`) and the equivalent Tailwind arbitrary form
 // (`p-[16px]`). Both feed the same conversion; the bracket form is reduced to
 // the shortest scale token, e.g. `p-[20px]` → `p-5`.
-const TOKEN_RE = /^(.+)-(\d*\.?\d+)px$/;
-const BRACKET_TOKEN_RE = /^(.+)-\[(\d*\.?\d+)px\]$/;
+//
+// `rem` is accepted and normalised against the 16px root. `em` deliberately is
+// not: it resolves against the *parent* font size, which is not knowable from
+// the text, so any conversion would be a guess.
+const TOKEN_RE = /^(.+)-(\d*\.?\d+)(px|rem)$/;
+const BRACKET_TOKEN_RE = /^(.+)-\[(\d*\.?\d+)(px|rem)\]$/;
+
+/** CSS root font size assumed for rem → px, matching Tailwind's own default. */
+const ROOT_FONT_SIZE_PX = 16;
 
 /**
  * Parses a candidate class token like `md:-mt-8px` into its parts.
@@ -70,10 +79,13 @@ export function parseToken(token: string): ParsedToken | null {
 
   const property = match[1];
   const rawNum = match[2];
-  const magnitude = parseFloat(rawNum);
-  if (!Number.isFinite(magnitude)) {
+  const unit = match[3] as "px" | "rem";
+  const value = parseFloat(rawNum);
+  if (!Number.isFinite(value)) {
     return null;
   }
+
+  const magnitude = unit === "rem" ? value * ROOT_FONT_SIZE_PX : value;
 
   return {
     variantPrefix,
@@ -83,6 +95,7 @@ export function parseToken(token: string): ParsedToken | null {
     rawNum,
     px: negative ? -magnitude : magnitude,
     bracket: bareMatch === null,
+    unit,
   };
 }
 
@@ -115,6 +128,12 @@ export function convertToken(
 
   const built = buildOutput(parsed, def, opts);
   if (built === null) {
+    return null;
+  }
+
+  // A rem value is only worth rewriting when it lands on a scale token. Falling
+  // back to an arbitrary value would just churn `p-[1.3rem]` into `p-[20.8px]`.
+  if (parsed.unit === "rem" && built.isArbitrary) {
     return null;
   }
 
@@ -168,7 +187,7 @@ function buildOutput(
       const customEligible =
         opts.customSpacing && !(opts.mode === "v3" && def.v4Only);
       if (customEligible) {
-        const name = findCustomSpacing(opts.customSpacing!, magnitude);
+        const name = findCustomToken(opts.customSpacing, magnitude);
         if (name !== null) {
           return scaled(name);
         }
@@ -210,11 +229,19 @@ function buildOutput(
     }
 
     case "fontSize": {
+      const custom = findCustomToken(opts.customFontSize, magnitude);
+      if (custom !== null) {
+        return scaled(custom);
+      }
       const name = isInteger(magnitude) ? FONT_SIZE_PX_TO_NAME.get(magnitude) : undefined;
       return name !== undefined ? scaled(name) : arbitrary();
     }
 
     case "radius": {
+      const custom = findCustomToken(opts.customRadius, magnitude);
+      if (custom !== null) {
+        return scaled(custom);
+      }
       const map = opts.mode === "v4" ? RADIUS_V4_PX_TO_NAME : RADIUS_V3_PX_TO_NAME;
       const name = isInteger(magnitude) ? map.get(magnitude) : undefined;
       return name !== undefined ? scaled(name) : arbitrary();
@@ -228,11 +255,14 @@ function buildOutput(
   }
 }
 
-/** Finds a custom spacing token name whose px matches `px` exactly. */
-function findCustomSpacing(
-  custom: Record<string, number>,
+/** Finds a custom theme token name whose px matches `px` exactly. */
+function findCustomToken(
+  custom: Record<string, number> | undefined,
   px: number,
 ): string | null {
+  if (!custom) {
+    return null;
+  }
   for (const [name, value] of Object.entries(custom)) {
     if (Math.abs(value - px) < 1e-9) {
       return name;

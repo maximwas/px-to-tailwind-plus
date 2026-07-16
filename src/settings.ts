@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import type { ConverterOptions, Mode, StepGranularity, ValueKind } from "./core";
 import { DEFAULT_CLASS_FUNCTIONS } from "./classContext";
+import { compileIgnorePatterns, isIgnoredPath } from "./ignoreFiles";
+import type { Minimatch } from "minimatch";
+import type { Logger } from "./logger";
 
 const ARBITRARY_CATEGORIES: ValueKind[] = ["spacing", "direct", "fontSize", "radius"];
 
@@ -15,6 +18,10 @@ export const DEFAULT_LANGUAGES = [
   "vue",
   "svelte",
   "astro",
+  "css",
+  "scss",
+  "less",
+  "postcss",
 ];
 
 export interface Settings {
@@ -25,6 +32,8 @@ export interface Settings {
   supportedLanguages: string[];
   arbitraryFor: ValueKind[];
   convertArbitraryBrackets: boolean;
+  /** Glob patterns; files whose path matches any are skipped entirely. */
+  ignoreFiles: string[];
   classFunctions: string[];
   convertWhileTyping: boolean;
   convertOnSave: boolean;
@@ -36,6 +45,8 @@ export interface Settings {
 /** Extra per-document context, supplied by the theme reader (stage 4). */
 export interface ConversionContext {
   customSpacing?: Record<string, number>;
+  customFontSize?: Record<string, number>;
+  customRadius?: Record<string, number>;
   /** Overrides spacingBasePx when a project defines a custom `--spacing`. */
   spacingBasePx?: number;
 }
@@ -46,17 +57,20 @@ export interface ConversionContext {
  */
 export class SettingsStore implements vscode.Disposable {
   private value: Settings;
+  private ignoreMatchers: Minimatch[] = [];
   private readonly emitter = new vscode.EventEmitter<Settings>();
   readonly onDidChange = this.emitter.event;
   private readonly disposables: vscode.Disposable[] = [];
 
-  constructor() {
+  constructor(private readonly logger?: Logger) {
     this.value = SettingsStore.read();
+    this.refreshIgnorePatterns();
     this.disposables.push(
       this.emitter,
       vscode.workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration(CONFIG_SECTION)) {
           this.value = SettingsStore.read();
+          this.refreshIgnorePatterns();
           this.emitter.fire(this.value);
         }
       }),
@@ -71,6 +85,24 @@ export class SettingsStore implements vscode.Disposable {
     return this.value.supportedLanguages.includes(languageId);
   }
 
+  /** True when `ignoreFiles` excludes this document from every feature. */
+  isIgnoredFile(uri: vscode.Uri): boolean {
+    return isIgnoredPath(
+      vscode.workspace.asRelativePath(uri, false),
+      this.ignoreMatchers,
+    );
+  }
+
+  private refreshIgnorePatterns(): void {
+    const { matchers, invalid } = compileIgnorePatterns(this.value.ignoreFiles);
+    this.ignoreMatchers = matchers;
+    if (invalid.length > 0) {
+      this.logger?.warn(
+        `Ignoring invalid ignoreFiles pattern(s): ${invalid.join(", ")}`,
+      );
+    }
+  }
+
   /** Builds converter options from settings plus optional theme context. */
   converterOptions(context?: ConversionContext): ConverterOptions {
     return {
@@ -78,6 +110,8 @@ export class SettingsStore implements vscode.Disposable {
       spacingBasePx: context?.spacingBasePx ?? this.value.spacingBasePx,
       stepGranularity: this.value.stepGranularity,
       customSpacing: context?.customSpacing,
+      customFontSize: context?.customFontSize,
+      customRadius: context?.customRadius,
       arbitraryFor: this.value.arbitraryFor,
       convertArbitraryBrackets: this.value.convertArbitraryBrackets,
     };
@@ -117,6 +151,7 @@ export class SettingsStore implements vscode.Disposable {
         "convertArbitraryBrackets",
         true,
       ),
+      ignoreFiles: config.get<string[]>("ignoreFiles", []) ?? [],
       classFunctions: config.get<string[]>(
         "classFunctions",
         DEFAULT_CLASS_FUNCTIONS,

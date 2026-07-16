@@ -1,8 +1,10 @@
 import postcss from "postcss";
 
-/** Custom spacing tokens plus an optional `--spacing` base, in px. */
+/** Custom theme tokens plus an optional `--spacing` base, all in px. */
 export interface ThemeSpacing {
   customSpacing: Record<string, number>;
+  customFontSize: Record<string, number>;
+  customRadius: Record<string, number>;
   spacingBasePx?: number;
 }
 
@@ -86,13 +88,30 @@ function addSpacingEntries(
  * config source without executing it. Handles simple object literals only;
  * dynamic configs need the child-process reader.
  */
-export function parseTailwindConfigSource(
+export function parseTailwindConfigSource(source: string): ConfigTokens {
+  return {
+    spacing: parseConfigBlock(source, "spacing"),
+    fontSize: parseConfigBlock(source, "fontSize"),
+    radius: parseConfigBlock(source, "borderRadius"),
+  };
+}
+
+/** Token maps read from a v3 config source, all in px. */
+export interface ConfigTokens {
+  spacing: Record<string, number>;
+  fontSize: Record<string, number>;
+  radius: Record<string, number>;
+}
+
+/** Pulls `<key>: { name: 'length' }` entries out of config source text. */
+function parseConfigBlock(
   source: string,
+  key: string,
 ): Record<string, number> {
   const result: Record<string, number> = {};
-  const spacingBlockRe = /spacing\s*:\s*\{([\s\S]*?)\}/g;
+  const blockRe = new RegExp(`\\b${key}\\s*:\\s*\\{([\\s\\S]*?)\\}`, "g");
   let block: RegExpExecArray | null;
-  while ((block = spacingBlockRe.exec(source)) !== null) {
+  while ((block = blockRe.exec(source)) !== null) {
     const entryRe = /['"]?([\w-]+)['"]?\s*:\s*['"]([^'"]+)['"]/g;
     let entry: RegExpExecArray | null;
     while ((entry = entryRe.exec(block[1])) !== null) {
@@ -106,22 +125,83 @@ export function parseTailwindConfigSource(
 }
 
 /**
- * Parses Tailwind v4 `@theme` blocks from CSS, collecting `--spacing-*` tokens
- * and any custom `--spacing` base. Parsing only — never executes anything.
+ * Extracts `theme.fontSize` (+ `theme.extend.fontSize`) as px. Tailwind allows
+ * either a plain length or a `[size, { lineHeight }]` tuple; only the size is
+ * relevant here.
+ */
+export function extractFontSizeFromTheme(
+  theme: unknown,
+): Record<string, number> {
+  return extractLengthMap(theme, "fontSize");
+}
+
+/** Extracts `theme.borderRadius` (+ `theme.extend.borderRadius`) as px. */
+export function extractRadiusFromTheme(
+  theme: unknown,
+): Record<string, number> {
+  return extractLengthMap(theme, "borderRadius");
+}
+
+function extractLengthMap(
+  theme: unknown,
+  key: string,
+): Record<string, number> {
+  const result: Record<string, number> = {};
+  if (!theme || typeof theme !== "object") {
+    return result;
+  }
+
+  const themeRecord = theme as Record<string, unknown>;
+  addLengthEntries(themeRecord[key], result);
+
+  const extend = themeRecord.extend;
+  if (extend && typeof extend === "object") {
+    addLengthEntries((extend as Record<string, unknown>)[key], result);
+  }
+
+  return result;
+}
+
+function addLengthEntries(
+  source: unknown,
+  target: Record<string, number>,
+): void {
+  if (!source || typeof source !== "object") {
+    return;
+  }
+  for (const [name, rawValue] of Object.entries(source)) {
+    // `fontSize` entries may be `[size, { lineHeight }]`; the size comes first.
+    const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (typeof value !== "string" && typeof value !== "number") {
+      continue;
+    }
+    const px = lengthToPx(String(value));
+    if (px !== null && px >= 0) {
+      target[name] = px;
+    }
+  }
+}
+
+/**
+ * Parses Tailwind v4 `@theme` blocks from CSS, collecting `--spacing-*`,
+ * `--text-*` and `--radius-*` tokens plus any custom `--spacing` base. Parsing
+ * only — never executes anything.
  */
 export function parseThemeCss(css: string): ThemeSpacing {
   const customSpacing: Record<string, number> = {};
+  const customFontSize: Record<string, number> = {};
+  const customRadius: Record<string, number> = {};
   let spacingBasePx: number | undefined;
 
   if (!css.includes("@theme")) {
-    return { customSpacing };
+    return { customSpacing, customFontSize, customRadius };
   }
 
   let root: postcss.Root;
   try {
     root = postcss.parse(css);
   } catch {
-    return { customSpacing };
+    return { customSpacing, customFontSize, customRadius };
   }
 
   root.walkAtRules("theme", (atRule) => {
@@ -133,17 +213,29 @@ export function parseThemeCss(css: string): ThemeSpacing {
         }
         return;
       }
-      if (decl.prop.startsWith("--spacing-")) {
-        const name = decl.prop.slice("--spacing-".length);
-        const px = lengthToPx(decl.value);
-        if (name && px !== null && px >= 0) {
-          customSpacing[name] = px;
-        }
-      }
+      collectToken(decl, "--spacing-", customSpacing);
+      collectToken(decl, "--text-", customFontSize);
+      collectToken(decl, "--radius-", customRadius);
     });
   });
 
   return spacingBasePx !== undefined
-    ? { customSpacing, spacingBasePx }
-    : { customSpacing };
+    ? { customSpacing, customFontSize, customRadius, spacingBasePx }
+    : { customSpacing, customFontSize, customRadius };
+}
+
+/** Records `<prefix><name>: <length>` into `target` when it resolves to px. */
+function collectToken(
+  decl: postcss.Declaration,
+  prefix: string,
+  target: Record<string, number>,
+): void {
+  if (!decl.prop.startsWith(prefix)) {
+    return;
+  }
+  const name = decl.prop.slice(prefix.length);
+  const px = lengthToPx(decl.value);
+  if (name && px !== null && px >= 0) {
+    target[name] = px;
+  }
 }

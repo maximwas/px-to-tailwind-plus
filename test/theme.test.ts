@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  extractFontSizeFromTheme,
+  extractRadiusFromTheme,
   extractSpacingFromTheme,
   lengthToPx,
   parseTailwindConfigSource,
@@ -47,7 +49,21 @@ describe("parseTailwindConfigSource (regex fallback)", () => {
     const source = `module.exports = {
       theme: { extend: { spacing: { sm: '6px', lg: '2rem' } } }
     };`;
-    expect(parseTailwindConfigSource(source)).toEqual({ sm: 6, lg: 32 });
+    expect(parseTailwindConfigSource(source).spacing).toEqual({ sm: 6, lg: 32 });
+  });
+
+  it("extracts fontSize and borderRadius blocks too", () => {
+    const source = `module.exports = {
+      theme: {
+        fontSize: { hero: '58px' },
+        borderRadius: { card: '14px' },
+        extend: { spacing: { sm: '6px' } }
+      }
+    };`;
+    const tokens = parseTailwindConfigSource(source);
+    expect(tokens.spacing).toEqual({ sm: 6 });
+    expect(tokens.fontSize).toEqual({ hero: 58 });
+    expect(tokens.radius).toEqual({ card: 14 });
   });
 });
 
@@ -64,7 +80,11 @@ describe("parseThemeCss (v4 @theme)", () => {
   });
 
   it("returns empty when there is no @theme block", () => {
-    expect(parseThemeCss(".foo { color: red }")).toEqual({ customSpacing: {} });
+    expect(parseThemeCss(".foo { color: red }")).toEqual({
+      customSpacing: {},
+      customFontSize: {},
+      customRadius: {},
+    });
   });
 });
 
@@ -91,5 +111,33 @@ describe("theme integration with the converter", () => {
       customSpacing,
     });
     expect(result?.output).toBe("p-2"); // 16 / 8 = 2
+  });
+});
+
+describe("theme tokens beyond spacing", () => {
+  it("parses v4 --text-* and --radius-* tokens from @theme", () => {
+    const css = `@theme {
+      --spacing: 4px;
+      --text-hero: 58px;
+      --text-body: 1rem;
+      --radius-card: 14px;
+    }`;
+    const parsed = parseThemeCss(css);
+    expect(parsed.customFontSize).toEqual({ hero: 58, body: 16 });
+    expect(parsed.customRadius).toEqual({ card: 14 });
+  });
+
+  it("extracts fontSize and borderRadius from a v3 config theme", () => {
+    const theme = {
+      fontSize: { hero: "58px", body: ["1rem", "1.5rem"] },
+      borderRadius: { card: "14px" },
+      extend: { fontSize: { huge: "72px" } },
+    };
+    expect(extractFontSizeFromTheme(theme)).toEqual({
+      hero: 58,
+      body: 16,
+      huge: 72,
+    });
+    expect(extractRadiusFromTheme(theme)).toEqual({ card: 14 });
   });
 });

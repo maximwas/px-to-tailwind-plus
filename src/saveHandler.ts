@@ -29,6 +29,9 @@ export class SaveHandler implements vscode.Disposable {
     if (!this.settings.isSupportedLanguage(event.document.languageId)) {
       return;
     }
+    if (this.settings.isIgnoredFile(event.document.uri)) {
+      return;
+    }
     event.waitUntil(this.computeEdits(event.document));
   }
 

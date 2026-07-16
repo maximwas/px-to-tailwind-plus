@@ -62,7 +62,8 @@ export class DiagnosticsProvider implements vscode.Disposable {
     if (
       !settings.enabled ||
       !settings.showDiagnostics ||
-      !this.settings.isSupportedLanguage(document.languageId)
+      !this.settings.isSupportedLanguage(document.languageId) ||
+      this.settings.isIgnoredFile(document.uri)
     ) {
       this.collection.delete(document.uri);
       return;

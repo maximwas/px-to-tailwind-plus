@@ -62,6 +62,9 @@ export class ChangeHandler implements vscode.Disposable {
     if (!this.settings.isSupportedLanguage(document.languageId)) {
       return;
     }
+    if (this.settings.isIgnoredFile(document.uri)) {
+      return;
+    }
 
     // Only react to a single typed character that completes a token.
     if (event.contentChanges.length !== 1) {
@@ -71,12 +74,13 @@ export class ChangeHandler implements vscode.Disposable {
     if (change.rangeLength !== 0 || change.text.length !== 1) {
       return;
     }
-    // Convert the moment the `px` unit is completed (the typed `x`), and also
-    // when a boundary character ends the token (space, quote, `}`, newline, …).
+    // Convert the moment the unit is completed (the `x` of `px`, the `m` of
+    // `rem`), and also when a boundary character ends the token (space, quote,
+    // `}`, newline, …).
     const typed = change.text;
     const isBoundary = BOUNDARY_TRIGGERS.has(typed);
-    const completesPx = typed === "x";
-    if (!isBoundary && !completesPx) {
+    const completesUnit = typed === "x" || typed === "m";
+    if (!isBoundary && !completesUnit) {
       return;
     }
 
@@ -96,7 +100,7 @@ export class ChangeHandler implements vscode.Disposable {
     }
 
     const token = lineText.slice(startCharacter, endCharacter);
-    if (!token.endsWith("px")) {
+    if (!token.endsWith("px") && !token.endsWith("rem")) {
       return;
     }
 

@@ -194,6 +194,45 @@ describe("custom theme spacing", () => {
   });
 });
 
+describe("custom theme font sizes and radii", () => {
+  it("v4 maps exact px matches to custom --text-* tokens", () => {
+    const options = v4({ customFontSize: { hero: 58 } });
+    expect(out("text-58px", options)).toBe("text-hero");
+    expect(out("text-[58px]", options)).toBe("text-hero");
+    expect(out("text-16px", options)).toBe("text-base"); // default scale still wins elsewhere
+  });
+
+  it("v4 maps exact px matches to custom --radius-* tokens", () => {
+    const options = v4({ customRadius: { card: 14 } });
+    expect(out("rounded-14px", options)).toBe("rounded-card");
+    expect(out("rounded-8px", options)).toBe("rounded-lg");
+  });
+
+  it("custom tokens win over the built-in named scale", () => {
+    expect(out("text-16px", v4({ customFontSize: { body: 16 } }))).toBe(
+      "text-body",
+    );
+    expect(out("rounded-8px", v4({ customRadius: { soft: 8 } }))).toBe(
+      "rounded-soft",
+    );
+  });
+
+  it("resolves rem input against custom tokens too", () => {
+    expect(out("text-[1rem]", v4({ customFontSize: { body: 16 } }))).toBe(
+      "text-body",
+    );
+  });
+
+  it("arbitraryFor still overrides custom tokens", () => {
+    const options = v4({ customFontSize: { hero: 58 }, arbitraryFor: ["fontSize"] });
+    expect(out("text-58px", options)).toBe("text-[58px]");
+  });
+
+  it("works in v3 as well", () => {
+    expect(out("text-58px", v3({ customFontSize: { hero: 58 } }))).toBe("text-hero");
+  });
+});
+
 describe("arbitraryFor setting forces arbitrary values", () => {
   it("keeps font sizes and radii as arbitrary when requested", () => {
     expect(out("text-14px", v4({ arbitraryFor: ["fontSize"] }))).toBe(
@@ -263,9 +302,11 @@ describe("arbitrary bracket px form is reduced to the scale token", () => {
     expect(out("!p-[20px]", v4())).toBe("!p-5");
   });
 
-  it("ignores bracket values in units other than px", () => {
-    expect(convertToken("p-[1.25rem]", v4())).toBeNull();
+  it("ignores bracket values in units it cannot resolve", () => {
     expect(convertToken("w-[50%]", v4())).toBeNull();
+    expect(convertToken("p-[1.5em]", v4())).toBeNull();
+    expect(convertToken("w-[calc(100%-1rem)]", v4())).toBeNull();
+    expect(convertToken("w-[2vw]", v4())).toBeNull();
   });
 });
 
@@ -286,6 +327,49 @@ describe("convertArbitraryBrackets setting gates the bracket form", () => {
   it("converts the bracket form when enabled (default)", () => {
     expect(out("p-[20px]", v4({ convertArbitraryBrackets: true }))).toBe("p-5");
     expect(out("p-[20px]", v4())).toBe("p-5");
+  });
+});
+
+describe("rem input is normalised against the 16px root", () => {
+  it("reduces the bare rem form", () => {
+    expect(out("p-1rem", v4())).toBe("p-4");
+    expect(out("p-0.5rem", v4())).toBe("p-2");
+  });
+
+  it("reduces the arbitrary bracket rem form", () => {
+    expect(out("p-[1.25rem]", v4())).toBe("p-5");
+    expect(out("gap-[0.75rem]", v4())).toBe("gap-3");
+  });
+
+  it("maps rem font sizes to named tokens", () => {
+    expect(out("text-[1.125rem]", v4())).toBe("text-lg");
+  });
+
+  it("works on the v3 scale and with negatives", () => {
+    expect(out("p-[1rem]", v3())).toBe("p-4");
+    expect(out("-mt-[0.5rem]", v4())).toBe("-mt-2");
+  });
+
+  it("honours custom spacing tokens", () => {
+    expect(out("p-[1rem]", v4({ customSpacing: { box: 16 } }))).toBe("p-box");
+  });
+
+  it("leaves rem alone when it does not reduce, instead of churning it to px", () => {
+    expect(convertToken("p-[1.3rem]", v4())).toBeNull();
+    expect(convertToken("p-1.3rem", v4())).toBeNull();
+  });
+
+  it("respects convertArbitraryBrackets and arbitraryFor", () => {
+    expect(
+      convertToken("p-[1rem]", v4({ convertArbitraryBrackets: false })),
+    ).toBeNull();
+    expect(convertToken("p-[1rem]", v4({ arbitraryFor: ["spacing"] }))).toBeNull();
+  });
+
+  it("never converts em, whose value depends on the parent font size", () => {
+    expect(convertToken("p-[1.5em]", v4())).toBeNull();
+    expect(convertToken("tracking-[-0.04em]", v4())).toBeNull();
+    expect(convertToken("text-[1.5em]", v4())).toBeNull();
   });
 });
 

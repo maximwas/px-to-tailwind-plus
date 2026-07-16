@@ -13,7 +13,7 @@ import { ConvertCodeActionProvider } from "./codeActions";
 
 export function activate(context: vscode.ExtensionContext): void {
   const logger = new Logger();
-  const settings = new SettingsStore();
+  const settings = new SettingsStore(logger);
   const themeProvider = new ThemeProvider(settings, logger);
   const visualFeedback = new VisualFeedback(settings);
   const statusBar = new StatusBar(settings);

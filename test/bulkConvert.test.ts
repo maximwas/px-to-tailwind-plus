@@ -87,6 +87,25 @@ describe("findConversions", () => {
     );
   });
 
+  it("converts inside a Tailwind @apply rule", () => {
+    expect(apply(".card { @apply p-16px mt-8px; }", v4)).toBe(
+      ".card { @apply p-4 mt-2; }",
+    );
+    expect(apply("@apply p-[20px] text-[1.125rem];", v4)).toBe(
+      "@apply p-5 text-lg;",
+    );
+  });
+
+  it("leaves ordinary CSS declarations alone", () => {
+    const input = ".card { padding: 16px; margin-top: 8px; }";
+    expect(apply(input, v4)).toBe(input);
+  });
+
+  it("stops at the end of the @apply rule", () => {
+    const input = ".card { @apply flex; }\n.other { border-width: 2px; }";
+    expect(apply(input, v4)).toBe(input);
+  });
+
   it("leaves px tokens outside any class context alone", () => {
     const cases = [
       "// p-16px in a line comment",

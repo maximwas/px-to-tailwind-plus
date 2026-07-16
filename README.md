@@ -1,9 +1,8 @@
 # Px to Tailwind Plus
 
-Convert pixel values to Tailwind CSS classes **as you type**. Type `p-16px` and
-the moment you hit space it becomes `p-4`. Works with **Tailwind v4** dynamic
-spacing (quarter-step scale) and **Tailwind v3** classic scale, in **VS Code**
-and **Cursor**.
+Type `p-16px`, get `p-4`. Paste `p-[20px]` from a design handoff, get `p-5`.
+Works with **Tailwind v4** dynamic spacing and **Tailwind v3** classic scale, in
+**VS Code** and **Cursor**.
 
 [![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/maksym-vasianin.px-to-tailwind-plus?label=VS%20Marketplace&color=0EA5E9)](https://marketplace.visualstudio.com/items?itemName=maksym-vasianin.px-to-tailwind-plus)
 [![Open VSX](https://img.shields.io/open-vsx/v/maksym-vasianin/px-to-tailwind-plus?label=Open%20VSX&color=0891B2)](https://open-vsx.org/extension/maksym-vasianin/px-to-tailwind-plus)
@@ -11,48 +10,73 @@ and **Cursor**.
 
 ---
 
-## Features
+## What it does
 
-- **Type-to-convert** inside `class`, `className`, `:class` and `class:`
-  attributes — fires the moment you finish the `px` unit (or type a space,
-  quote, backtick, `}` or newline).
-- **Yellow highlight + quick fix** — convertible px classes are flagged with a
-  warning and a one-click "Convert to …" fix (great for pasted code).
-- **Convert on save** — optionally rewrite every px class in the file on save.
-- **Tailwind v4 dynamic spacing** — `p-13px → p-3.25`, `p-18px → p-4.5`,
-  `w-200px → w-50`, with a configurable base and quarter/half/integer steps.
-- **Tailwind v3 classic scale** — maps to the fixed scale, everything else
-  becomes an arbitrary value.
-- **Every spacing utility** — padding, margin, `gap`, `w/h/size`, `min-*`,
-  `max-*`, inset, `translate-*`, `space-*`, `scroll-m*`, `scroll-p*`, `basis`,
-  `indent`, `leading`, plus borders, ring, outline, stroke, font-size, radius
-  and tracking.
-- **Negatives, variants and important** — `-mt-8px → -mt-2`, `md:p-16px → md:p-4`.
-- **Reduces arbitrary brackets** — already-written `p-[20px] → p-5`,
-  `text-[20px] → text-xl`; irreducible or non-px brackets are left alone.
-- **Arbitrary fallback** — off-scale values become `w-[50.5px]`.
-- **Custom theme aware** — reads `tailwind.config.*` (v3) and CSS `@theme`
-  `--spacing-*` tokens (v4); exact px matches map to your named tokens.
-- **Hover tooltips** — hover `p-4` to see `padding: 1rem /* 16px */`.
-- **Commands, status bar and visual feedback.**
+| You write         | You get        | Why                        |
+| ----------------- | -------------- | -------------------------- |
+| `p-16px`          | `p-4`          | pixel shorthand            |
+| `p-[20px]`        | `p-5`          | arbitrary value reduced    |
+| `p-[1.25rem]`     | `p-5`          | rem resolved against 16px  |
+| `text-14px`       | `text-sm`      | named font-size scale      |
+| `rounded-8px`     | `rounded-lg`   | named radius scale         |
+| `-mt-8px`         | `-mt-2`        | negatives                  |
+| `md:hover:p-16px` | `md:hover:p-4` | variant chains             |
+| `@apply p-16px;`  | `@apply p-4;`  | CSS `@apply` rules         |
 
-## Examples
+It converts **as you type**, on **save**, via a **quick fix**, or across a whole
+file with a command. Off-scale values fall back to an arbitrary value
+(`w-50.5px` → `w-[50.5px]`) so nothing is ever silently rounded.
 
-Tailwind v4 (default, base `4px`, quarter steps):
+## Where it applies
 
-| You type      | You get       |
-| ------------- | ------------- |
-| `p-16px`      | `p-4`         |
-| `px-13px`     | `px-3.25`     |
-| `p-18px`      | `p-4.5`       |
-| `-mt-8px`     | `-mt-2`       |
-| `w-1px`       | `w-px`        |
-| `w-50.5px`    | `w-[50.5px]`  |
-| `text-14px`   | `text-sm`     |
-| `rounded-8px` | `rounded-lg`  |
-| `border-2px`  | `border-2`    |
+Only inside real class context — never in comments, plain strings or unrelated
+code:
 
-Tailwind v3 (classic fixed scale):
+- `class`, `className`, `:class`, `v-bind:class`, Svelte `class:`
+- class utilities: `clsx`, `cn`, `cx`, `cva`, `classnames`, `tw`, `twMerge`,
+  `twJoin` (configurable), including `className={clsx("…")}`
+- Tailwind `@apply` rules in CSS/SCSS/Less/PostCSS
+
+```jsx
+<div className="p-16px" />        // → p-4
+const label = "p-16px";           // untouched — not class context
+// p-16px in a comment            // untouched
+<div id="p-16px" />               // untouched
+```
+
+## Install
+
+**VS Code** — search **“Px to Tailwind Plus”**, or:
+
+```
+ext install maksym-vasianin.px-to-tailwind-plus
+```
+
+**Cursor** — installs from Open VSX. Search **“Px to Tailwind Plus”**, or grab
+the `.vsix` from the
+[Open VSX page](https://open-vsx.org/extension/maksym-vasianin/px-to-tailwind-plus)
+and run **Extensions: Install from VSIX…**.
+
+> Cursor mirrors Open VSX on its own schedule and can sit a release behind. If
+> you need the newest version immediately, install the `.vsix` directly.
+
+## Modes
+
+Set `pxToTwPlus.mode`:
+
+**`v4`** (default) — dynamic spacing, `value = px / spacingBasePx`. If the value
+lands on the allowed step it becomes a bare class, otherwise an arbitrary value.
+Quarter-step classes render as `calc(var(--spacing) * N)` and are valid v4.
+
+| You type   | You get      |
+| ---------- | ------------ |
+| `p-16px`   | `p-4`        |
+| `px-13px`  | `px-3.25`    |
+| `p-18px`   | `p-4.5`      |
+| `w-1px`    | `w-px`       |
+| `w-50.5px` | `w-[50.5px]` |
+
+**`v3`** — the classic fixed scale; off-scale values become arbitrary.
 
 | You type      | You get        |
 | ------------- | -------------- |
@@ -61,90 +85,107 @@ Tailwind v3 (classic fixed scale):
 | `rounded-4px` | `rounded`      |
 | `border-3px`  | `border-[3px]` |
 
-Already-written arbitrary brackets are reduced to the shortest token too (same
-scale, mode, theme and settings as the bare form):
+## Units
 
-| You type      | You get       |
-| ------------- | ------------- |
-| `p-[20px]`    | `p-5`         |
-| `text-[20px]` | `text-xl`     |
-| `gap-[12px]`  | `gap-3`       |
-| `p-[7.3px]`   | `p-[7.3px]`   |
+**px** and **rem** are both understood; rem resolves against the 16px root. A
+rem value is only rewritten when it lands on a scale token, so it is never
+churned into pixels:
 
-## Installation
+| You type          | You get   |
+| ----------------- | --------- |
+| `p-1rem`          | `p-4`     |
+| `p-[1.25rem]`     | `p-5`     |
+| `text-[1.125rem]` | `text-lg` |
+| `p-[1.3rem]`      | unchanged |
 
-### VS Code
+**`em` is never converted.** It resolves against the *parent* font size, which
+cannot be known from the text, so any value would be a guess. `%`, `vw` and
+`calc()` are left alone for the same reason.
 
-Search **“Px to Tailwind Plus”** in the Extensions view, or:
+## Coverage
 
+Padding, margin, `gap`, `w/h/size`, `min-*`, `max-*`, inset, `translate-*`,
+`space-*`, `scroll-m*`, `scroll-p*`, `basis`, `indent`, `leading`, plus borders,
+ring, outline, stroke, font-size, border-radius and tracking — with negatives,
+variant chains and `!important`.
+
+## Custom themes
+
+Your own design tokens win over the built-in scales.
+
+**v4** — `--spacing-*`, `--text-*` and `--radius-*` in a CSS `@theme` block,
+plus a custom `--spacing` base:
+
+```css
+@theme {
+  --spacing: 4px;
+  --spacing-gutter: 20px; /* p-20px       → p-gutter       */
+  --text-hero: 58px;      /* text-58px    → text-hero      */
+  --radius-card: 14px;    /* rounded-14px → rounded-card   */
+}
 ```
-ext install maksym-vasianin.px-to-tailwind-plus
-```
 
-### Cursor
-
-Cursor installs from the **Open VSX** registry. Search **“Px to Tailwind Plus”**
-in Cursor’s Extensions view, or download the `.vsix` from the
-[Open VSX page](https://open-vsx.org/extension/maksym-vasianin/px-to-tailwind-plus)
-and run **Extensions: Install from VSIX…**.
-
-## Modes
-
-Set `pxToTwPlus.mode`:
-
-- **`v4`** (default) — dynamic spacing. `value = px / spacingBasePx`. If the
-  value lands on the allowed step granularity it becomes a bare class
-  (`p-3.25`), otherwise an arbitrary value (`p-[13px]`). Emitted quarter-step
-  classes render as `calc(var(--spacing) * N)` and are valid Tailwind v4.
-- **`v3`** — the classic fixed spacing scale. Off-scale values become arbitrary.
+**v3** — `theme.spacing`, `theme.fontSize` and `theme.borderRadius` (and their
+`extend` counterparts) from `tailwind.config.{js,cjs,mjs,ts}`. `.js`/`.cjs`
+configs are evaluated in an isolated child process, so no config code runs in
+the editor; other formats are parsed without executing anything.
 
 ## Settings
 
-| Setting                         | Default             | Description                                                                    |
-| ------------------------------- | ------------------- | ------------------------------------------------------------------------------ |
-| `pxToTwPlus.enabled`            | `true`              | Enable/disable conversion.                                                     |
-| `pxToTwPlus.mode`               | `"v4"`              | `"v4"` dynamic spacing or `"v3"` classic scale.                                |
-| `pxToTwPlus.spacingBasePx`      | `4`                 | Base spacing unit (Tailwind `--spacing`). `value = px / base`.                 |
-| `pxToTwPlus.stepGranularity`    | `0.25`              | Smallest bare-class step in v4 (`1`, `0.5` or `0.25`).                         |
-| `pxToTwPlus.arbitraryFor`       | `[]`                | Categories to always keep arbitrary — e.g. `["fontSize"]` keeps `text-[14px]`. |
-| `pxToTwPlus.convertArbitraryBrackets` | `true`        | Reduce the bracket form (`p-[20px]` → `p-5`). Off = `[Npx]` left as-is, no highlight. |
-| `pxToTwPlus.classFunctions`     | `["clsx", "cn", …]` | Class-utility functions whose string args count as class context.             |
-| `pxToTwPlus.convertWhileTyping` | `true`              | Convert live as you type. Turn off to convert only via quick fix or on save.   |
-| `pxToTwPlus.convertOnSave`      | `false`             | Convert every px class in the file on save.                                    |
-| `pxToTwPlus.showDiagnostics`    | `true`              | Highlight convertible px classes (yellow) with a quick fix.                     |
-| `pxToTwPlus.supportedLanguages` | all 8 languages     | Languages where conversion runs.                                              |
-| `pxToTwPlus.showVisualFeedback` | `true`              | Briefly highlight converted ranges.                                            |
-| `pxToTwPlus.showHoverTooltips`  | `true`              | Show px/rem values on hover.                                                   |
+| Setting                               | Default             | Description                                                                   |
+| ------------------------------------- | ------------------- | ----------------------------------------------------------------------------- |
+| `pxToTwPlus.enabled`                  | `true`              | Master switch.                                                                |
+| `pxToTwPlus.mode`                     | `"v4"`              | `"v4"` dynamic spacing or `"v3"` classic scale.                               |
+| `pxToTwPlus.spacingBasePx`            | `4`                 | Base spacing unit (Tailwind `--spacing`). `value = px / base`.                |
+| `pxToTwPlus.stepGranularity`          | `0.25`              | Smallest bare-class step in v4 (`1`, `0.5` or `0.25`).                        |
+| `pxToTwPlus.arbitraryFor`             | `[]`                | Categories to always keep arbitrary — e.g. `["fontSize"]` keeps `text-[14px]`. |
+| `pxToTwPlus.convertArbitraryBrackets` | `true`              | Reduce `p-[20px]` → `p-5`. Off = brackets left as-is, no highlight.           |
+| `pxToTwPlus.ignoreFiles`              | `[]`                | Glob patterns; matching files are skipped entirely.                           |
+| `pxToTwPlus.classFunctions`           | `["clsx", "cn", …]` | Class utilities whose string args count as class context.                     |
+| `pxToTwPlus.supportedLanguages`       | all 12              | Languages where conversion runs.                                              |
+| `pxToTwPlus.convertWhileTyping`       | `true`              | Convert live as you type.                                                     |
+| `pxToTwPlus.convertOnSave`            | `false`             | Convert every px class in the file on save.                                   |
+| `pxToTwPlus.showDiagnostics`          | `true`              | Highlight convertible classes (yellow) with a quick fix.                      |
+| `pxToTwPlus.showVisualFeedback`       | `true`              | Briefly highlight converted ranges.                                           |
+| `pxToTwPlus.showHoverTooltips`        | `true`              | Show px/rem values on hover.                                                  |
 
-Supported languages: `html`, `javascript`, `javascriptreact`, `typescript`,
-`typescriptreact`, `vue`, `svelte`, `astro`.
+Languages: `html`, `javascript`, `javascriptreact`, `typescript`,
+`typescriptreact`, `vue`, `svelte`, `astro`, `css`, `scss`, `less`, `postcss`.
+In the CSS family only `@apply` rules are touched.
 
-## Custom theme awareness
+### Excluding files
 
-- **v3** — if a `tailwind.config.{js,cjs,mjs,ts}` exists, `theme.spacing` and
-  `theme.extend.spacing` are read; exact px matches map to your token
-  (`{ sm: '6px' }` → `p-6px` becomes `p-sm`). `.js`/`.cjs` configs are evaluated
-  in an isolated child process (never in the editor); `.ts`/`.mjs` use a safe
-  regex parser and support only simple object literals.
-- **v4** — CSS `@theme` blocks are scanned for `--spacing-*` tokens and a custom
-  `--spacing` base (e.g. in `globals.css`).
+`pxToTwPlus.ignoreFiles` takes **glob patterns** — the same syntax as
+`.gitignore` and `files.exclude`. A matching file is skipped by every feature:
+no live conversion, no convert-on-save, no diagnostics. Empty by default.
 
-Theme data is cached and refreshed automatically when those files change.
+```jsonc
+{
+  "pxToTwPlus.ignoreFiles": [
+    "**/*.{test,spec}.tsx", // test files anywhere
+    "**/__tests__/**",      // whole test folders
+    "/src/legacy/**",       // anchored at the workspace root
+    "**/dist/**"            // build output
+  ]
+}
+```
+
+Patterns match the workspace-relative path; a leading `/` anchors to the root.
+Separators are normalised, so one pattern works on every OS. An invalid pattern
+is reported in the output channel and skipped — it never disables the others.
 
 ## Commands
 
-Open the Command Palette and search “Px to Tailwind Plus”:
-
-- **Convert File** — convert every px class in the active file.
-- **Convert Selection** — convert within the selection(s).
-- **Toggle Extension** — enable/disable (also from the status bar).
-- **Show Logs** — open the output channel.
+| Command                                    | What it does                             |
+| ------------------------------------------ | ---------------------------------------- |
+| **Px to Tailwind Plus: Convert File**      | Convert every px class in the file.      |
+| **Px to Tailwind Plus: Convert Selection** | Convert the selection only.              |
+| **Px to Tailwind Plus: Toggle Extension**  | Enable/disable (also in the status bar). |
+| **Px to Tailwind Plus: Show Logs**         | Open the output channel.                 |
 
 ## Contributing
 
-Issues and pull requests are welcome. See
-[CONTRIBUTING.md](./CONTRIBUTING.md) for the development, testing and release
-workflow.
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 

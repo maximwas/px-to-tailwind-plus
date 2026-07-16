@@ -5,6 +5,35 @@ All notable changes to **Px to Tailwind Plus** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-07-16
+
+### Added
+
+- **rem input.** `p-1rem` and `p-[1.25rem]` become `p-4` / `p-5`,
+  `text-[1.125rem]` becomes `text-lg`, resolved against the 16px root. A rem
+  value is only rewritten when it lands on a scale token, so `p-[1.3rem]` stays
+  as written instead of churning into `p-[20.8px]`. `em` is deliberately never
+  converted — it resolves against the parent font size, which is not knowable
+  from the text.
+- **`@apply` in CSS/SCSS/Less/PostCSS.** `@apply p-16px mt-8px;` becomes
+  `@apply p-4 mt-2;`. The CSS family is added to the default
+  `supportedLanguages`; only `@apply` rules are touched, ordinary declarations
+  like `padding: 16px` are left alone.
+- **Custom theme font sizes and radii.** Previously only `--spacing` was read.
+  Now v4 `@theme` `--text-*` and `--radius-*`, and v3 `theme.fontSize` /
+  `theme.borderRadius` (plus their `extend` counterparts), map exact px matches
+  to your own token names.
+- **`ignoreFiles` setting.** Glob patterns, the same syntax as `.gitignore` and
+  `files.exclude` (`**/*.test.ts`, `/src/legacy/**`). A matching file is skipped
+  by every feature. Empty by default. Matched against the workspace-relative
+  path, a leading `/` anchors to the workspace root, separators are normalised
+  so one pattern works on every OS, and an invalid pattern is reported in the
+  output channel instead of disabling the rest.
+
+### Changed
+
+- README rewritten around what the extension does rather than a feature list.
+
 ## [1.2.1] - 2026-07-15
 
 ### Fixed

@@ -2,7 +2,7 @@
   "name": "px-to-tailwind-plus",
   "displayName": "Px to Tailwind Plus",
   "description": "Convert pixel values to Tailwind CSS classes as you type — Tailwind v4 dynamic spacing & v3 classic scale, for VS Code and Cursor.",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "publisher": "maksym-vasianin",
   "license": "MIT",
   "homepage": "https://github.com/maximwas/px-to-tailwind-plus#readme",
@@ -49,7 +49,11 @@
     "onLanguage:typescriptreact",
     "onLanguage:vue",
     "onLanguage:svelte",
-    "onLanguage:astro"
+    "onLanguage:astro",
+    "onLanguage:css",
+    "onLanguage:scss",
+    "onLanguage:less",
+    "onLanguage:postcss"
   ],
   "contributes": {
     "commands": [
@@ -147,6 +151,15 @@
           "markdownDescription": "Reduce the arbitrary bracket form to the shortest scale token (`p-[20px]` → `p-5`, `text-[20px]` → `text-xl`). Turn off to leave `[Npx]` classes untouched — no conversion and no diagnostic highlight for them. The bare suffix form (`p-20px`) is always converted.",
           "scope": "resource"
         },
+        "pxToTwPlus.ignoreFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Glob patterns, same syntax as `.gitignore` and `files.exclude`. A file matching any of them is skipped entirely — no conversion, no convert-on-save, no diagnostics. Empty by default. Matched against the workspace-relative path; a leading `/` anchors to the workspace root. Examples: `**/*.test.ts`, `**/*.{test,spec}.tsx`, `**/__tests__/**`, `/src/legacy/**`, `**/dist/**`.",
+          "scope": "resource"
+        },
         "pxToTwPlus.supportedLanguages": {
           "type": "array",
           "items": {
@@ -159,7 +172,11 @@
               "typescriptreact",
               "vue",
               "svelte",
-              "astro"
+              "astro",
+              "css",
+              "scss",
+              "less",
+              "postcss"
             ]
           },
           "default": [
@@ -170,9 +187,13 @@
             "typescriptreact",
             "vue",
             "svelte",
-            "astro"
+            "astro",
+            "css",
+            "scss",
+            "less",
+            "postcss"
           ],
-          "description": "Languages where conversion is active.",
+          "description": "Languages where conversion is active. CSS-family languages apply to Tailwind @apply rules.",
           "scope": "window"
         },
         "pxToTwPlus.classFunctions": {
@@ -242,6 +263,7 @@
     "release": "node scripts/release.mjs"
   },
   "dependencies": {
+    "minimatch": "^10.2.5",
     "postcss": "^8.5.6"
   },
   "devDependencies": {

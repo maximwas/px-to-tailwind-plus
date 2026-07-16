@@ -31,6 +31,12 @@ const CLASS_ATTRIBUTE_RE =
 const IDENTIFIER_TAIL_RE = /([\w$]+)$/;
 
 /**
+ * Tailwind's `@apply` in CSS/SCSS, where the utilities are bare rather than
+ * quoted. The rule ends at `;` or a brace, so those characters end the context.
+ */
+const APPLY_CONTEXT_RE = /@apply\b[^;{}]*$/;
+
+/**
  * A statement terminator between a quote and the token means that quote closed
  * an earlier string rather than opening the one the token sits in, e.g.
  * `clsx("a"); // p-16px`.
@@ -58,6 +64,12 @@ export function isClassAttributeContext(
 ): boolean {
   // Svelte class directive: the utility lives in the attribute name itself.
   if (token.startsWith("class:")) {
+    return true;
+  }
+
+  // Tailwind `@apply` in CSS/SCSS: utilities are bare, so there is no quote to
+  // anchor on — the at-rule itself is the context.
+  if (APPLY_CONTEXT_RE.test(prefix)) {
     return true;
   }
 

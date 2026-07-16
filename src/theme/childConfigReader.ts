@@ -1,25 +1,42 @@
 import { execFile } from "node:child_process";
-import { extractSpacingFromTheme } from "./parse";
+import {
+  extractFontSizeFromTheme,
+  extractRadiusFromTheme,
+  extractSpacingFromTheme,
+} from "./parse";
 
 const CHILD_TIMEOUT_MS = 3000;
 
+/** Custom token maps read from a v3 config, all in px. */
+export interface ConfigTokens {
+  spacing: Record<string, number>;
+  fontSize: Record<string, number>;
+  radius: Record<string, number>;
+}
+
 /**
- * Reads `theme.spacing` from a Tailwind config by requiring it in an isolated
- * child Node process, so no untrusted config code runs in the extension host.
- * Only `.js`/`.cjs` are supported here; other formats use the regex fallback.
- * Resolves to null when the child cannot produce a usable result.
+ * Reads `theme.spacing`, `theme.fontSize` and `theme.borderRadius` from a
+ * Tailwind config by requiring it in an isolated child Node process, so no
+ * untrusted config code runs in the extension host. Only `.js`/`.cjs` are
+ * supported here; other formats use the regex fallback. Resolves to null when
+ * the child cannot produce a usable result.
  */
 export function readConfigViaChildProcess(
   configPath: string,
-): Promise<Record<string, number> | null> {
+): Promise<ConfigTokens | null> {
   const script = `
     try {
       const mod = require(process.argv[1]);
       const config = mod && mod.default ? mod.default : mod;
       const theme = (config && config.theme) || {};
+      const extend = theme.extend || {};
       process.stdout.write(JSON.stringify({
         spacing: theme.spacing,
-        extendSpacing: theme.extend && theme.extend.spacing,
+        extendSpacing: extend.spacing,
+        fontSize: theme.fontSize,
+        extendFontSize: extend.fontSize,
+        borderRadius: theme.borderRadius,
+        extendBorderRadius: extend.borderRadius,
       }));
     } catch (error) {
       process.exit(2);
@@ -37,15 +54,21 @@ export function readConfigViaChildProcess(
           return;
         }
         try {
-          const parsed = JSON.parse(stdout) as {
-            spacing?: unknown;
-            extendSpacing?: unknown;
-          };
-          const spacing = extractSpacingFromTheme({
-            spacing: parsed.spacing,
-            extend: { spacing: parsed.extendSpacing },
+          const parsed = JSON.parse(stdout) as Record<string, unknown>;
+          resolve({
+            spacing: extractSpacingFromTheme({
+              spacing: parsed.spacing,
+              extend: { spacing: parsed.extendSpacing },
+            }),
+            fontSize: extractFontSizeFromTheme({
+              fontSize: parsed.fontSize,
+              extend: { fontSize: parsed.extendFontSize },
+            }),
+            radius: extractRadiusFromTheme({
+              borderRadius: parsed.borderRadius,
+              extend: { borderRadius: parsed.extendBorderRadius },
+            }),
           });
-          resolve(spacing);
         } catch {
           resolve(null);
         }

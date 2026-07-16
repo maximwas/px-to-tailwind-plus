@@ -38,6 +38,19 @@ describe("isClassAttributeContext — inside class strings", () => {
     expect(isClassAttributeContext("<div :class=\"{ 'a': x, '", TOKEN)).toBe(true);
   });
 
+  it("Tailwind @apply in CSS/SCSS, where utilities are unquoted", () => {
+    expect(isClassAttributeContext(".card { @apply ", TOKEN)).toBe(true);
+    expect(isClassAttributeContext(".card { @apply flex ", TOKEN)).toBe(true);
+    expect(isClassAttributeContext("@apply ", TOKEN)).toBe(true);
+  });
+
+  it("does not treat ordinary CSS declarations as class context", () => {
+    expect(isClassAttributeContext(".card { padding: ", TOKEN)).toBe(false);
+    expect(isClassAttributeContext(".card { @apply flex; padding: ", TOKEN)).toBe(
+      false,
+    );
+  });
+
   it("Svelte class directive (token carries the attribute)", () => {
     expect(isClassAttributeContext("<div ", "class:p-16px")).toBe(true);
   });
