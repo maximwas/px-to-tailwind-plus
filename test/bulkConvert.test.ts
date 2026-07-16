@@ -6,7 +6,9 @@ const v4: ConverterOptions = { mode: "v4", spacingBasePx: 4, stepGranularity: 0.
 
 /** Applies conversions to text (right-to-left) for easy assertions. */
 function apply(text: string, options: ConverterOptions): string {
-  const edits = findConversions(text, options).sort((a, b) => b.start - a.start);
+  const edits = findConversions(text, options)
+    .filter((edit) => edit.kind === "convert")
+    .sort((a, b) => b.start - a.start);
   let result = text;
   for (const edit of edits) {
     result = result.slice(0, edit.start) + edit.output + result.slice(edit.end);
@@ -104,6 +106,27 @@ describe("findConversions", () => {
   it("stops at the end of the @apply rule", () => {
     const input = ".card { @apply flex; }\n.other { border-width: 2px; }";
     expect(apply(input, v4)).toBe(input);
+  });
+
+  it("offers a snap next to the exact rewrite, tagged so bulk skips it", () => {
+    const options = { ...v4, mode: "v3" as const, snapToNearestPx: 2 };
+    const found = findConversions('<div className="p-17px">', options);
+    expect(found.map((f) => `${f.kind}:${f.output}`)).toEqual([
+      "convert:p-[17px]",
+      "snap:p-4",
+    ]);
+    // Bulk/save apply only the exact rewrite.
+    expect(apply('<div className="p-17px">', options)).toBe(
+      '<div className="p-[17px]">',
+    );
+  });
+
+  it("emits no snap unless snapToNearestPx is set", () => {
+    const found = findConversions('<div className="p-17px">', {
+      ...v4,
+      mode: "v3" as const,
+    });
+    expect(found.every((f) => f.kind === "convert")).toBe(true);
   });
 
   it("leaves px tokens outside any class context alone", () => {

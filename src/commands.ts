@@ -75,6 +75,9 @@ async function convertActiveEditor(
       options,
       deps.settings.current.classFunctions,
     )) {
+      if (conversion.kind !== "convert") {
+        continue;
+      }
       const start = document.positionAt(baseOffset + conversion.start);
       const end = document.positionAt(baseOffset + conversion.end);
       edit.replace(document.uri, new vscode.Range(start, end), conversion.output);

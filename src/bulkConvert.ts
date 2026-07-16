@@ -1,4 +1,8 @@
-import { convertToken, type ConverterOptions } from "./core";
+import {
+  convertToken,
+  findSnapSuggestion,
+  type ConverterOptions,
+} from "./core";
 import { DEFAULT_CLASS_FUNCTIONS } from "./classContext";
 
 export interface BulkConversion {
@@ -8,6 +12,11 @@ export interface BulkConversion {
   end: number;
   original: string;
   output: string;
+  /**
+   * `convert` is an exact rewrite and is safe to apply in bulk. `snap` moves the
+   * value by up to `snapToNearestPx`, so it is only ever offered as a quick fix.
+   */
+  kind: "convert" | "snap";
 }
 
 /**
@@ -58,27 +67,38 @@ export function findConversions(
   classFunctions: string[] = DEFAULT_CLASS_FUNCTIONS,
 ): BulkConversion[] {
   const conversions: BulkConversion[] = [];
-  const seen = new Set<number>();
+  const seen = new Set<string>();
+
+  const push = (
+    start: number,
+    original: string,
+    output: string,
+    kind: BulkConversion["kind"],
+  ): void => {
+    const key = `${start}:${kind}`;
+    if (seen.has(key)) {
+      return;
+    }
+    seen.add(key);
+    conversions.push({ start, end: start + original.length, original, output, kind });
+  };
 
   const collect = (content: string, contentStart: number): void => {
     PX_TOKEN_RE.lastIndex = 0;
     let token: RegExpExecArray | null;
     while ((token = PX_TOKEN_RE.exec(content)) !== null) {
-      const result = convertToken(token[0], options);
-      if (!result) {
-        continue;
-      }
+      const original = token[0];
       const start = contentStart + token.index;
-      if (seen.has(start)) {
-        continue;
+
+      const result = convertToken(original, options);
+      if (result) {
+        push(start, original, result.output, "convert");
       }
-      seen.add(start);
-      conversions.push({
-        start,
-        end: start + token[0].length,
-        original: token[0],
-        output: result.output,
-      });
+
+      const snap = findSnapSuggestion(original, options);
+      if (snap) {
+        push(start, original, snap.output, "snap");
+      }
     }
   };
 

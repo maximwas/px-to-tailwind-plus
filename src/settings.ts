@@ -5,6 +5,10 @@ import { compileIgnorePatterns, isIgnoredPath } from "./ignoreFiles";
 import type { Minimatch } from "minimatch";
 import type { Logger } from "./logger";
 
+/** A negative or non-finite budget means the feature is simply off. */
+const readSnapBudget = (raw: number): number =>
+  Number.isFinite(raw) && raw > 0 ? raw : 0;
+
 const ARBITRARY_CATEGORIES: ValueKind[] = ["spacing", "direct", "fontSize", "radius"];
 
 export const CONFIG_SECTION = "pxToTwPlus";
@@ -32,6 +36,7 @@ export interface Settings {
   supportedLanguages: string[];
   arbitraryFor: ValueKind[];
   convertArbitraryBrackets: boolean;
+  snapToNearestPx: number;
   /** Glob patterns; files whose path matches any are skipped entirely. */
   ignoreFiles: string[];
   classFunctions: string[];
@@ -114,6 +119,7 @@ export class SettingsStore implements vscode.Disposable {
       customRadius: context?.customRadius,
       arbitraryFor: this.value.arbitraryFor,
       convertArbitraryBrackets: this.value.convertArbitraryBrackets,
+      snapToNearestPx: this.value.snapToNearestPx,
     };
   }
 
@@ -151,6 +157,7 @@ export class SettingsStore implements vscode.Disposable {
         "convertArbitraryBrackets",
         true,
       ),
+      snapToNearestPx: readSnapBudget(config.get<number>("snapToNearestPx", 0)),
       ignoreFiles: config.get<string[]>("ignoreFiles", []) ?? [],
       classFunctions: config.get<string[]>(
         "classFunctions",

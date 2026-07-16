@@ -2,7 +2,7 @@
   "name": "px-to-tailwind-plus",
   "displayName": "Px to Tailwind Plus",
   "description": "Convert pixel values to Tailwind CSS classes as you type — Tailwind v4 dynamic spacing & v3 classic scale, for VS Code and Cursor.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publisher": "maksym-vasianin",
   "license": "MIT",
   "homepage": "https://github.com/maximwas/px-to-tailwind-plus#readme",
@@ -149,6 +149,13 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "Reduce the arbitrary bracket form to the shortest scale token (`p-[20px]` → `p-5`, `text-[20px]` → `text-xl`). Turn off to leave `[Npx]` classes untouched — no conversion and no diagnostic highlight for them. The bare suffix form (`p-20px`) is always converted.",
+          "scope": "resource"
+        },
+        "pxToTwPlus.snapToNearestPx": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "markdownDescription": "Offer the nearest scale token as a **quick fix** for off-scale values, within this many pixels — e.g. with `2`, `p-17px` suggests `p-4` (16px). `0` disables it.\n\nSnapping changes the rendered result, so it is **never** applied automatically: not while typing, not on save, not by *Convert File*. It appears as a blue hint with a \"Snap to nearest\" quick fix you choose yourself. Values you pinned via `arbitraryFor` are never snapped.",
           "scope": "resource"
         },
         "pxToTwPlus.ignoreFiles": {

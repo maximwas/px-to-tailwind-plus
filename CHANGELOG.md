@@ -5,6 +5,19 @@ All notable changes to **Px to Tailwind Plus** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-07-16
+
+### Added
+
+- `snapToNearestPx` setting (default `0`, off). Set a pixel budget and off-scale
+  values offer the nearest scale token as a quick fix — `p-17px` → `p-4`,
+  `text-21px` → `text-xl`, including the pasted bracket form `p-[17px]`.
+  Snapping changes the rendered result, so it is never applied automatically:
+  not while typing, not on save, not by *Convert File*. It surfaces as a blue
+  hint with a "Snap to nearest" quick fix, distinct from the yellow exact-rewrite
+  warning. Values pinned via `arbitraryFor`, values already on the scale, and
+  candidates outside the budget are all left alone.
+
 ## [1.3.0] - 2026-07-16
 
 ### Added

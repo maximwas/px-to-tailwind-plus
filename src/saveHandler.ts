@@ -43,7 +43,9 @@ export class SaveHandler implements vscode.Disposable {
       document.getText(),
       options,
       this.settings.current.classFunctions,
-    ).map((conversion) =>
+    )
+      .filter((conversion) => conversion.kind === "convert")
+      .map((conversion) =>
       vscode.TextEdit.replace(
         new vscode.Range(
           document.positionAt(conversion.start),

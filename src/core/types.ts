@@ -43,6 +43,12 @@ export interface ConverterOptions {
    * suffix form (`p-20px`) is always converted. Defaults to true when omitted.
    */
   convertArbitraryBrackets?: boolean;
+  /**
+   * Maximum distance, in pixels, for offering the nearest scale token as a
+   * quick fix (`p-17px` → `p-4`). Zero disables it. Snapping changes the
+   * rendered result, so it is never applied automatically.
+   */
+  snapToNearestPx?: number;
 }
 
 export interface ConversionResult {

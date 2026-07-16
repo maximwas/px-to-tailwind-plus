@@ -140,6 +140,7 @@ the editor; other formats are parsed without executing anything.
 | `pxToTwPlus.stepGranularity`          | `0.25`              | Smallest bare-class step in v4 (`1`, `0.5` or `0.25`).                        |
 | `pxToTwPlus.arbitraryFor`             | `[]`                | Categories to always keep arbitrary — e.g. `["fontSize"]` keeps `text-[14px]`. |
 | `pxToTwPlus.convertArbitraryBrackets` | `true`              | Reduce `p-[20px]` → `p-5`. Off = brackets left as-is, no highlight.           |
+| `pxToTwPlus.snapToNearestPx`          | `0`                 | Offer the nearest scale token as a quick fix, within N px. `0` = off.        |
 | `pxToTwPlus.ignoreFiles`              | `[]`                | Glob patterns; matching files are skipped entirely.                           |
 | `pxToTwPlus.classFunctions`           | `["clsx", "cn", …]` | Class utilities whose string args count as class context.                     |
 | `pxToTwPlus.supportedLanguages`       | all 12              | Languages where conversion runs.                                              |
@@ -173,6 +174,29 @@ no live conversion, no convert-on-save, no diagnostics. Empty by default.
 Patterns match the workspace-relative path; a leading `/` anchors to the root.
 Separators are normalised, so one pattern works on every OS. An invalid pattern
 is reported in the output channel and skipped — it never disables the others.
+
+### Snapping off-scale values
+
+Design handoffs drift: `p-17px` where the scale has `16px`. By default that just
+becomes `p-[17px]` — correct, but arbitrary forever. Set
+`pxToTwPlus.snapToNearestPx` to a pixel budget and the nearest scale token is
+offered as a **quick fix**:
+
+```jsonc
+{ "pxToTwPlus.snapToNearestPx": 2 }
+```
+
+```
+p-17px      →  blue hint: "p-17px → p-4 (nearest scale value)"
+text-21px   →  Snap to nearest: text-xl
+p-[17px]    →  Snap to nearest: p-4
+w-137px     →  nothing — 9px away, outside the budget
+```
+
+Snapping **changes the rendered result**, so it is never applied on its own: not
+while typing, not on save, not by *Convert File*. You pick it from the quick-fix
+menu, one value at a time. Anything you pinned with `arbitraryFor` is left alone,
+and values already on the scale are never touched.
 
 ## Commands
 

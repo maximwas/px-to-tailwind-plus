@@ -15,6 +15,7 @@ export class ConvertCodeActionProvider implements vscode.CodeActionProvider {
     context: vscode.CodeActionContext,
   ): vscode.CodeAction[] {
     const actions: vscode.CodeAction[] = [];
+    let hasExactRewrite = false;
 
     for (const diagnostic of context.diagnostics) {
       if (
@@ -23,18 +24,27 @@ export class ConvertCodeActionProvider implements vscode.CodeActionProvider {
       ) {
         continue;
       }
+      // Snap suggestions are reported as Information; exact rewrites as Warning.
+      const isSnap =
+        diagnostic.severity === vscode.DiagnosticSeverity.Information;
       const fix = new vscode.CodeAction(
-        `Convert to ${diagnostic.code}`,
+        isSnap
+          ? `Snap to nearest: ${diagnostic.code}`
+          : `Convert to ${diagnostic.code}`,
         vscode.CodeActionKind.QuickFix,
       );
       fix.diagnostics = [diagnostic];
-      fix.isPreferred = true;
+      // Never make a value-changing snap the default fix.
+      fix.isPreferred = !isSnap;
       fix.edit = new vscode.WorkspaceEdit();
       fix.edit.replace(document.uri, diagnostic.range, diagnostic.code);
       actions.push(fix);
+      if (!isSnap) {
+        hasExactRewrite = true;
+      }
     }
 
-    if (actions.length > 0) {
+    if (hasExactRewrite) {
       const convertAll = new vscode.CodeAction(
         "Convert all px classes in file",
         vscode.CodeActionKind.QuickFix,

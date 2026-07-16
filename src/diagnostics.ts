@@ -80,10 +80,17 @@ export class DiagnosticsProvider implements vscode.Disposable {
           document.positionAt(conversion.start),
           document.positionAt(conversion.end),
         );
+        const isSnap = conversion.kind === "snap";
+        // A snap changes the rendered value, so it is advice (blue), not the
+        // exact-rewrite warning (yellow) that convert-on-save would apply.
         const diagnostic = new vscode.Diagnostic(
           range,
-          `${conversion.original} → ${conversion.output}`,
-          vscode.DiagnosticSeverity.Warning,
+          isSnap
+            ? `${conversion.original} → ${conversion.output} (nearest scale value)`
+            : `${conversion.original} → ${conversion.output}`,
+          isSnap
+            ? vscode.DiagnosticSeverity.Information
+            : vscode.DiagnosticSeverity.Warning,
         );
         diagnostic.source = DIAGNOSTIC_SOURCE;
         diagnostic.code = conversion.output;
