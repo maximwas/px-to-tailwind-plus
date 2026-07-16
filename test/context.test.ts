@@ -17,6 +17,21 @@ describe("isClassAttributeContext — inside class strings", () => {
     expect(isClassAttributeContext('<div className={cn(clsx("', TOKEN)).toBe(true);
   });
 
+  it("is unaffected by apostrophes in prose earlier in the file", () => {
+    const prefix = "// It's a component, don't touch\n<Text className=\"m-0 ";
+    expect(isClassAttributeContext(prefix, TOKEN)).toBe(true);
+  });
+
+  it("survives apostrophe-bearing JSX text between elements", () => {
+    const prefix =
+      "<Text className=\"mt-7\">There's one way to know.</Text>\n<Text className=\"";
+    expect(isClassAttributeContext(prefix, TOKEN)).toBe(true);
+  });
+
+  it("ignores a token in a comment after a class-utility call", () => {
+    expect(isClassAttributeContext('clsx("a"); // ', TOKEN)).toBe(false);
+  });
+
   it("Vue :class and v-bind:class, including nested strings", () => {
     expect(isClassAttributeContext('<div :class="', TOKEN)).toBe(true);
     expect(isClassAttributeContext('<div v-bind:class="', TOKEN)).toBe(true);

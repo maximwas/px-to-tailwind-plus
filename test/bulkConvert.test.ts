@@ -49,9 +49,34 @@ describe("findConversions", () => {
     );
   });
 
-  it("does not flag class-like text inside a plain string literal", () => {
-    const input = `const input = '<div className="p-16px p-[20px]">';`;
-    expect(apply(input, v4)).toBe(input);
+  it("is unaffected by apostrophes in prose above the class", () => {
+    const input = [
+      "// It's a component, don't touch",
+      "<Text className=\"mt-18px m-0\">",
+      "  Low energy? Brain fog? There's one way to actually know.",
+      "</Text>",
+    ].join("\n");
+    expect(apply(input, v4)).toBe(
+      [
+        "// It's a component, don't touch",
+        "<Text className=\"mt-4.5 m-0\">",
+        "  Low energy? Brain fog? There's one way to actually know.",
+        "</Text>",
+      ].join("\n"),
+    );
+  });
+
+  it("keeps converting classes that follow apostrophe-bearing JSX text", () => {
+    const input = [
+      "<Text className=\"mt-7\">There's one way to know.</Text>",
+      "<Text className=\"mt-[18px] text-[18px]\">An FDA-approved auto-injector.</Text>",
+    ].join("\n");
+    expect(apply(input, v4)).toBe(
+      [
+        "<Text className=\"mt-7\">There's one way to know.</Text>",
+        "<Text className=\"mt-4.5 text-lg\">An FDA-approved auto-injector.</Text>",
+      ].join("\n"),
+    );
   });
 
   it("converts inside recognised class-utility calls", () => {

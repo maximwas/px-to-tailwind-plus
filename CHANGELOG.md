@@ -5,6 +5,18 @@ All notable changes to **Px to Tailwind Plus** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-07-15
+
+### Fixed
+
+- An apostrophe in ordinary prose (`There's`, `don't`, `It's`) no longer
+  disables conversion and diagnostics for the rest of the file. Class-context
+  detection counted quote parity across the document, so an apostrophe read as
+  an unterminated string and everything after it looked like string content.
+  Detection now anchors on the `class`/`className`/`:class` keyword or a
+  recognised class-utility call and never counts quotes across the document.
+  Affected diagnostics, convert-on-save, the bulk commands and live typing.
+
 ## [1.2.0] - 2026-07-15
 
 ### Added

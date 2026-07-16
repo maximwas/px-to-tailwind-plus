@@ -1,9 +1,5 @@
 import { convertToken, type ConverterOptions } from "./core";
-import {
-  DEFAULT_CLASS_FUNCTIONS,
-  isClassAttributeContext,
-  MAX_WINDOW_CHARS,
-} from "./classContext";
+import { DEFAULT_CLASS_FUNCTIONS } from "./classContext";
 
 export interface BulkConversion {
   /** Absolute start offset of the token within the source text. */
@@ -24,12 +20,31 @@ export interface BulkConversion {
 const PX_TOKEN_RE =
   /(?:[\w-]+:)*!?-?[a-z][\w-]*-(?:\d*\.?\d+px|\[\d*\.?\d+px\])/gi;
 
+/** Matches class attribute values and captures the quote + inner content. */
+const CLASS_VALUE_RE =
+  /(?:class(?:Name)?|:class|v-bind:class)\s*=\s*(["'`])([\s\S]*?)\1/g;
+
+/** Matches a quoted string and captures the quote + inner content. */
+const STRING_RE = /(["'`])([\s\S]*?)\1/g;
+
+const escapeRegExp = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 /**
- * Finds every convertible px token that sits inside a real class attribute (or
- * a recognised class-utility call) in `text`. The same context detector used by
- * live typing gates each candidate, so class-like text inside ordinary string
- * literals is left alone. Pure: returns offset-based edits the caller maps to
- * document positions.
+ * Finds every convertible px token inside class attribute values and recognised
+ * class-utility calls (`clsx("…")`, `cn("…")`, including `className={clsx("…")}`).
+ *
+ * Detection is anchored on the `class`/`className`/`:class` keyword or the call
+ * name and only scans that value. It deliberately never counts quotes across the
+ * document: an apostrophe in ordinary prose (`There's`) would skew such a count
+ * and silently disable conversion for the rest of the file.
+ *
+ * Known limitation: class-like markup written inside a plain string literal
+ * (e.g. `const s = '<div className="p-16px">'` in test fixtures) still matches.
+ * Telling that apart from real JSX needs a full parser; being wrong there is far
+ * cheaper than missing real classes.
+ *
+ * Pure: returns offset-based edits the caller maps to document positions.
  */
 export function findConversions(
   text: string,
@@ -37,31 +52,57 @@ export function findConversions(
   classFunctions: string[] = DEFAULT_CLASS_FUNCTIONS,
 ): BulkConversion[] {
   const conversions: BulkConversion[] = [];
+  const seen = new Set<number>();
 
-  PX_TOKEN_RE.lastIndex = 0;
-  let token: RegExpExecArray | null;
-  while ((token = PX_TOKEN_RE.exec(text)) !== null) {
-    const original = token[0];
-    const start = token.index;
-
-    const result = convertToken(original, options);
-    if (!result) {
-      continue;
+  const collect = (content: string, contentStart: number): void => {
+    PX_TOKEN_RE.lastIndex = 0;
+    let token: RegExpExecArray | null;
+    while ((token = PX_TOKEN_RE.exec(content)) !== null) {
+      const result = convertToken(token[0], options);
+      if (!result) {
+        continue;
+      }
+      const start = contentStart + token.index;
+      if (seen.has(start)) {
+        continue;
+      }
+      seen.add(start);
+      conversions.push({
+        start,
+        end: start + token[0].length,
+        original: token[0],
+        output: result.output,
+      });
     }
+  };
 
-    const windowStart = Math.max(0, start - MAX_WINDOW_CHARS);
-    const prefix = text.slice(windowStart, start);
-    if (!isClassAttributeContext(prefix, original, classFunctions)) {
-      continue;
-    }
-
-    conversions.push({
-      start,
-      end: start + original.length,
-      original,
-      output: result.output,
-    });
+  CLASS_VALUE_RE.lastIndex = 0;
+  let attribute: RegExpExecArray | null;
+  while ((attribute = CLASS_VALUE_RE.exec(text)) !== null) {
+    const content = attribute[2];
+    // The closing quote is the final char of the match; content precedes it.
+    collect(content, attribute.index + attribute[0].length - 1 - content.length);
   }
 
+  if (classFunctions.length > 0) {
+    const callRe = new RegExp(
+      `\\b(?:${classFunctions.map(escapeRegExp).join("|")})\\s*\\(([\\s\\S]*?)\\)`,
+      "g",
+    );
+    let call: RegExpExecArray | null;
+    while ((call = callRe.exec(text)) !== null) {
+      const args = call[1];
+      const argsStart = call.index + call[0].length - 1 - args.length;
+
+      STRING_RE.lastIndex = 0;
+      let literal: RegExpExecArray | null;
+      while ((literal = STRING_RE.exec(args)) !== null) {
+        // +1 skips the opening quote captured by the string match.
+        collect(literal[2], argsStart + literal.index + 1);
+      }
+    }
+  }
+
+  conversions.sort((a, b) => a.start - b.start);
   return conversions;
 }

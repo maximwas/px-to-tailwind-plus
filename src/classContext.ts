@@ -31,6 +31,18 @@ const CLASS_ATTRIBUTE_RE =
 const IDENTIFIER_TAIL_RE = /([\w$]+)$/;
 
 /**
+ * A statement terminator between a quote and the token means that quote closed
+ * an earlier string rather than opening the one the token sits in, e.g.
+ * `clsx("a"); // p-16px`.
+ *
+ * Kept to `;` on purpose: `,`, `:`, `{` and `}` occur in Vue's object syntax
+ * (`:class="{ 'a': x }"`), and `<`, `>`, `(`, `)` occur in Tailwind arbitrary
+ * values and variants (`[&>*]:mt-2`, `w-[calc(100%-1rem)]`). Rejecting on those
+ * would drop real classes — far worse than the odd stray highlight.
+ */
+const NON_CLASS_CONTENT_RE = /;/;
+
+/**
  * Non-parsing check for whether a token sits inside a class attribute value.
  * Operates purely on the text before the token.
  *
@@ -49,42 +61,36 @@ export function isClassAttributeContext(
     return true;
   }
 
-  const openingQuoteIndex = findEnclosingStringStart(prefix);
-  if (openingQuoteIndex === -1) {
-    return false;
-  }
-
-  const beforeQuote = prefix.slice(0, openingQuoteIndex);
-  if (CLASS_ATTRIBUTE_RE.test(beforeQuote)) {
-    return true;
-  }
-
-  const enclosingCall = findEnclosingCallName(beforeQuote);
-  return enclosingCall !== null && classFunctions.includes(enclosingCall);
-}
-
-/**
- * Returns the index of the quote that opens the string the caret is inside, or
- * -1 when the caret is not inside a string. Handles `"`, `'` and backticks.
- */
-function findEnclosingStringStart(prefix: string): number {
-  let quoteChar: string | null = null;
-  let quoteStart = -1;
-
-  for (let index = 0; index < prefix.length; index++) {
+  // Walk back to the nearest quote — the candidate opening quote of the class
+  // string — and keep walking for nested quotes (`:class="'p-16px'"`).
+  //
+  // Deliberately never counts quote parity across the window: an apostrophe in
+  // ordinary prose (`There's`) reads as an unterminated string to such a count
+  // and would silently disable detection for the rest of the file.
+  for (let index = prefix.length - 1; index >= 0; index--) {
     const char = prefix[index];
-    if (quoteChar) {
-      if (char === quoteChar) {
-        quoteChar = null;
-        quoteStart = -1;
-      }
-    } else if (char === '"' || char === "'" || char === "`") {
-      quoteChar = char;
-      quoteStart = index;
+    if (char !== '"' && char !== "'" && char !== "`") {
+      continue;
+    }
+
+    // Structural characters between the quote and the token mean this quote
+    // closed an earlier string rather than opening the class string.
+    if (NON_CLASS_CONTENT_RE.test(prefix.slice(index + 1))) {
+      return false;
+    }
+
+    const beforeQuote = prefix.slice(0, index);
+    if (CLASS_ATTRIBUTE_RE.test(beforeQuote)) {
+      return true;
+    }
+
+    const enclosingCall = findEnclosingCallName(beforeQuote);
+    if (enclosingCall !== null && classFunctions.includes(enclosingCall)) {
+      return true;
     }
   }
 
-  return quoteChar ? quoteStart : -1;
+  return false;
 }
 
 /**
