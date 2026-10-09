@@ -5,6 +5,9 @@
   "version": "1.4.0",
   "publisher": "maksym-vasianin",
   "license": "MIT",
+  "sponsor": {
+    "url": "https://send.monobank.ua/jar/7o9oMrbXTj"
+  },
   "homepage": "https://github.com/maximwas/px-to-tailwind-plus#readme",
   "repository": {
     "type": "git",
