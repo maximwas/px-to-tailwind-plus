@@ -207,6 +207,11 @@ and values already on the scale are never touched.
 | **Px to Tailwind Plus: Toggle Extension**  | Enable/disable (also in the status bar). |
 | **Px to Tailwind Plus: Show Logs**         | Open the output channel.                 |
 
+## Support
+
+Px to Tailwind Plus is free and MIT-licensed. If it saves you time, you can [donate](https://send.monobank.ua/jar/7o9oMrbXTj) or follow my work on
+[Patreon](https://www.patreon.com/cw/VasianinMaksim).
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
