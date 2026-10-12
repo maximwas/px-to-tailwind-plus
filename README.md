@@ -209,8 +209,8 @@ and values already on the scale are never touched.
 
 ## Support
 
-Px to Tailwind Plus is free and MIT-licensed. If it saves you time, you can [donate](https://send.monobank.ua/jar/7o9oMrbXTj) or follow my work on
-[Patreon](https://www.patreon.com/cw/VasianinMaksim).
+Px to Tailwind Plus is free and MIT-licensed. If it saves you time, you can donate on [Ko-fi](https://ko-fi.com/maksymvasianin) or to a
+[monobank jar](https://send.monobank.ua/jar/7o9oMrbXTj).
 
 ## Contributing
 
